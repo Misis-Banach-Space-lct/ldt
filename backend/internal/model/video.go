@@ -36,8 +36,8 @@ type VideoUpdateGroup struct {
 }
 
 type VideoRepository interface {
-	InsertOne(c context.Context, videoData VideoCreate) error
-	InsertMany(c context.Context, videosData []VideoCreate) error
+	InsertOne(c context.Context, videoData VideoCreate) (int, error)
+	InsertMany(c context.Context, videosData []VideoCreate) ([]int, error)
 	FindOne(c context.Context, filter string, value any, userGroupIds []int) (Video, error)
 	FindMany(c context.Context, filter string, value any, offset, limit int, userGroupIds []int) ([]Video, error)
 	DeleteOne(c context.Context, videoId int) error

@@ -33,23 +33,21 @@ services:
     depends_on:
       - db
       - redis
+      - worker
     ports:
       - "9999:9999"
     volumes:
       - backend-static:/app/static
 
-  # ml-backend:
-  #   build:
-  #     context: ./ml-backend
-  #     dockerfile: Dockerfile
-  #   restart: always
-  #   env_file:
-  #     - ml-backend/.env
-  #   depends_on:
-  #     - db
-  #     - redis
-  #   ports:
-  #     - "10000:10000"
+  worker:
+    build:
+      context: ./ml-backend
+      dockerfile: Dockerfile
+    # command: ['python3', '-m', 'celery', '-A', 'worker', 'worker', '-l', 'info']
+    volumes:
+      - backend-static:/app/static
+    depends_on:
+      - redis
 
 volumes:
   backend-static:

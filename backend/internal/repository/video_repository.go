@@ -35,10 +35,10 @@ func NewVideoPgRepository(db *pgxpool.Pool) (model.VideoRepository, error) {
 	}, nil
 }
 
-func (vr *videoPgRepository) InsertOne(c context.Context, videoData model.VideoCreate) error {
+func (vr *videoPgRepository) InsertOne(c context.Context, videoData model.VideoCreate) (int, error) {
 	tx, err := vr.db.Begin(c)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer tx.Rollback(c)
 
@@ -49,7 +49,7 @@ func (vr *videoPgRepository) InsertOne(c context.Context, videoData model.VideoC
 		returning id
 	`, videoData.Title, videoData.Source).Scan(&videoId)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	_, err = tx.Exec(c, `
@@ -57,7 +57,7 @@ func (vr *videoPgRepository) InsertOne(c context.Context, videoData model.VideoC
 		values($1, 0)
 	`, videoId)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if videoData.GroupId != 0 {
@@ -66,24 +66,26 @@ func (vr *videoPgRepository) InsertOne(c context.Context, videoData model.VideoC
 			values($1, $2)
 		`, videoId, videoData.GroupId)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	return tx.Commit(c)
+	return videoId, tx.Commit(c)
 }
 
-func (vr *videoPgRepository) InsertMany(c context.Context, videoData []model.VideoCreate) error {
+func (vr *videoPgRepository) InsertMany(c context.Context, videoData []model.VideoCreate) ([]int, error) {
+	var videoIds []int
+
 	tx, err := vr.db.Begin(c)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback(c)
 
 	for _, video := range videoData {
 		innerTx, err := tx.Begin(c)
 		if err != nil {
-			return err
+			return videoIds, err
 		}
 		defer innerTx.Rollback(c)
 
@@ -94,15 +96,17 @@ func (vr *videoPgRepository) InsertMany(c context.Context, videoData []model.Vid
 			returning id
 		`, video.Title, video.Source).Scan(&videoId)
 		if err != nil {
-			return err
+			return videoIds, err
 		}
+
+		videoIds = append(videoIds, videoId)
 
 		_, err = innerTx.Exec(c, `
 			insert into `+model.VideosTableName+"_"+model.GroupsTableName+`
 			values($1, 0)
 		`, videoId)
 		if err != nil {
-			return err
+			return videoIds, err
 		}
 
 		if video.GroupId != 0 {
@@ -111,17 +115,17 @@ func (vr *videoPgRepository) InsertMany(c context.Context, videoData []model.Vid
 				values($1, $2)
 			`, videoId, video.GroupId)
 			if err != nil {
-				return err
+				return videoIds, err
 			}
 		}
 
 		err = innerTx.Commit(c)
 		if err != nil {
-			return err
+			return videoIds, err
 		}
 	}
 
-	return tx.Commit(c)
+	return videoIds, tx.Commit(c)
 }
 
 func (vr *videoPgRepository) FindOne(c context.Context, filter string, value any, userGroupIds []int) (model.Video, error) {
