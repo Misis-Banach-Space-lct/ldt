@@ -15,7 +15,7 @@ type Video struct {
 	Id              int       `json:"id"`    // serial
 	Title           string    `json:"title"` // unique
 	Source          string    `json:"source"`
-	ProcessedSource string    `json:"-"`
+	ProcessedSource string    `json:"processedSource"`
 	Status          string    `json:"status"`    // default = "processing"
 	CreatedAt       time.Time `json:"createdAt"` // default = current timestamp
 	UpdatedAt       time.Time `json:"updatedAt"` // default = current timestamp
@@ -43,4 +43,5 @@ type VideoRepository interface {
 	DeleteOne(c context.Context, videoId int) error
 	AddToGroup(c context.Context, videoId, groupId int) error
 	RemoveFromGroup(c context.Context, videoId, groupId int) error
+	GetVideoGroupIds(c context.Context, videoId int) ([]int, error)
 }
