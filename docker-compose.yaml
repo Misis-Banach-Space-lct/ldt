@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    env_file:
+      - backend/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+
+  redis:
+    image: docker.io/bitnami/redis:7.2
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development
+      # TODO: change no password
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./redis_data:/bitnami/redis/data
+    
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - backend/.env
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "9999:9999"
+    volumes:
+      - backend-static:/app/static
+
+  # ml-backend:
+  #   build:
+  #     context: ./ml-backend
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   env_file:
+  #     - ml-backend/.env
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   ports:
+  #     - "10000:10000"
+
+volumes:
+  backend-static:
+  redis_data:
+    driver: local

@@ -1,0 +1,695 @@
+basePath: /
+definitions:
+  model.AuthResponse:
+    properties:
+      accessToken:
+        type: string
+      role:
+        enum:
+        - admin
+        - viewer
+        type: string
+      type:
+        type: string
+    type: object
+  model.GroupCreate:
+    properties:
+      title:
+        type: string
+    required:
+    - title
+    type: object
+  model.User:
+    properties:
+      createdAt:
+        description: default = current timestamp
+        type: string
+      email:
+        description: not null, unique
+        type: string
+      firstName:
+        type: string
+      id:
+        description: serial
+        type: integer
+      lastName:
+        type: string
+      role:
+        description: admin, viewer
+        type: string
+      updatedAt:
+        description: default = current timestamp
+        type: string
+    type: object
+  model.UserCreate:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      groupId:
+        minimum: 0
+        type: integer
+      lastName:
+        type: string
+      role:
+        enum:
+        - admin
+        - viewer
+        type: string
+    type: object
+  model.UserGroupUpdate:
+    properties:
+      action:
+        enum:
+        - add
+        - remove
+        type: string
+      groupId:
+        minimum: 0
+        type: integer
+      userId:
+        type: integer
+    required:
+    - action
+    - userId
+    type: object
+  model.UserLogin:
+    properties:
+      password:
+        example: test123456
+        type: string
+      username:
+        example: testUser
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  model.Video:
+    properties:
+      createdAt:
+        description: default = current timestamp
+        type: string
+      id:
+        description: serial
+        type: integer
+      source:
+        type: string
+      status:
+        description: default = "processing"
+        type: string
+      title:
+        description: unique
+        type: string
+      updatedAt:
+        description: default = current timestamp
+        type: string
+    type: object
+  model.VideoCreate:
+    properties:
+      groupId:
+        type: integer
+      source:
+        type: string
+      title:
+        type: string
+    type: object
+  model.VideoUpdateGroup:
+    properties:
+      action:
+        enum:
+        - add
+        - remove
+        type: string
+      groupId:
+        minimum: 0
+        type: integer
+      videoId:
+        type: integer
+    required:
+    - action
+    - videoId
+    type: object
+info:
+  contact: {}
+  description: API документация к решению команды MISIS Banach Space для детекции
+    точек незаконной торгволи
+  title: ЛЦТ-2023 видео-детекция незаконной торговли API
+  version: 0.0.1
+paths:
+  /api/v1/groups:
+    get:
+      consumes:
+      - application/json
+      description: Получение всех групп с возможностью пагинации
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список групп
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Ошибка при получении групп
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+      summary: Получение всех групп
+      tags:
+      - groups
+    post:
+      consumes:
+      - application/json
+      description: Создание группы с указанным названием, по которой можно агрегировать
+        всех пользователей и созданные подключения к камерам и видео
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные для создания группы
+        in: body
+        name: groupData
+        required: true
+        schema:
+          $ref: '#/definitions/model.GroupCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Группа успешно создана
+          schema:
+            type: string
+        "400":
+          description: Ошибка при создании группы
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Создание группы
+      tags:
+      - groups
+  /api/v1/groups/{groupId}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление группы по её id (все зависимые записи из join-таблиц удаляются
+        автоматически)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Id группы
+        in: path
+        name: groupId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Группа успешно удалена
+          schema:
+            type: string
+        "400":
+          description: Ошибка при удалении группы
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Удаление группы
+      tags:
+      - groups
+  /api/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Получение всех пользователей с возможностью пагинации (доступно
+        только для администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: groupId
+        description: Фильтр
+        enum:
+        - groupId
+        - role
+        in: query
+        name: filter
+        type: string
+      - default: "0"
+        description: Значение фильтра
+        in: query
+        name: value
+        type: string
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список пользователей
+          schema:
+            items:
+              $ref: '#/definitions/model.User'
+            type: array
+        "400":
+          description: Ошибка при получении пользователей
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+      summary: Получение всех пользователей
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Создание пользователя с указанными данными (доступно только для
+        администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные для создания пользователя
+        in: body
+        name: userData
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь успешно создан
+          schema:
+            type: object
+        "400":
+          description: Ошибка при создании пользователя
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Создание пользователя
+      tags:
+      - users
+  /api/v1/users/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление пользователя по его id (все зависимые записи из join-таблиц
+        удаляются автоматически, доступно только для администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Id пользователя
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Пользователь успешно удален
+          schema:
+            type: string
+        "400":
+          description: Ошибка при удалении пользователя
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Удаление пользователя
+      tags:
+      - users
+  /api/v1/users/updateGroup:
+    post:
+      consumes:
+      - application/json
+      description: Добавление/удаление пользователя из группы по его id (доступно
+        только для администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные для добавления/удаления пользователя из группы
+        in: body
+        name: updateData
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserGroupUpdate'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Пользователь успешно добавлен/удален из группы
+          schema:
+            type: string
+        "400":
+          description: Ошибка при добавлении/удалении пользователя из группы
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Добавление/удаление пользователя из группы
+      tags:
+      - users
+  /api/v1/videos:
+    get:
+      consumes:
+      - application/json
+      description: Получение всех видео по фильтру с возможностью пагинации (полтзователи
+        могут получать только видео из своих групп)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: groupId
+        description: Фильтр поиска
+        enum:
+        - status
+        - groupId
+        in: query
+        name: filter
+        type: string
+      - default: "0"
+        description: Значение фильтра
+        in: query
+        name: value
+        type: string
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список видео
+          schema:
+            items:
+              $ref: '#/definitions/model.Video'
+            type: array
+        "400":
+          description: Ошибка при получении видео
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Получение всех видео по фильтру
+      tags:
+      - videos
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создание видео с указанными данными (доступно только для администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Видео файл
+        in: formData
+        name: video
+        required: true
+        type: file
+      - description: Название видео
+        in: formData
+        name: title
+        type: string
+      - description: ID группы, к которой принадлежит видео, 0 - для всех
+        in: formData
+        name: groupId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Видео успешно создано
+          schema:
+            $ref: '#/definitions/model.VideoCreate'
+        "400":
+          description: Ошибка при создании видео
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Создание видео
+      tags:
+      - videos
+  /api/v1/videos/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Получение видео по id (пользователи могут получать только видео
+        из своих групп)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Id видео
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Видео
+          schema:
+            $ref: '#/definitions/model.Video'
+        "400":
+          description: Ошибка при получении видео
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Получение видео по id
+      tags:
+      - videos
+  /api/v1/videos/many:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создание нескольких видео из архива с указанными данными (доступно
+        только для администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Архив с видео
+        in: formData
+        name: archive
+        required: true
+        type: file
+      - description: Название видео (будет добавлено к названию каждого видео)
+        in: formData
+        name: title
+        type: string
+      - description: ID группы, к которой принадлежит видео (все видео будут добавлены
+          в эту группу), 0 - для всех
+        in: formData
+        name: groupId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Видео успешно созданы
+          schema:
+            type: object
+        "400":
+          description: Ошибка при создании видео
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Создание нескольких видео из архива
+      tags:
+      - videos
+  /api/v1/videos/updateGroup:
+    post:
+      consumes:
+      - application/json
+      description: Добавление/удаление видео из гурппы по id (доступно только для
+        администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: updateData
+        required: true
+        schema:
+          $ref: '#/definitions/model.VideoUpdateGroup'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Видео успешно обновлено
+          schema:
+            type: string
+        "400":
+          description: Ошибка при обновлении видео
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Добавление/удаление видео из группы
+      tags:
+      - videos
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизоваться в системе с помощью заранее сгенерированных логина
+        и пароля
+      parameters:
+      - description: Данные для авторизации
+        in: body
+        name: loginData
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token, значение для header Authorization
+          schema:
+            $ref: '#/definitions/model.AuthResponse'
+        "401":
+          description: Не авторизован
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Авторизация
+      tags:
+      - auth
+swagger: "2.0"
