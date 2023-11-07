@@ -19,6 +19,7 @@ type Video struct {
 	Status          string    `json:"status"`    // default = "processing"
 	CreatedAt       time.Time `json:"createdAt"` // default = current timestamp
 	UpdatedAt       time.Time `json:"updatedAt"` // default = current timestamp
+	GroupIds        []int     `json:"groupIds"`
 }
 
 // used in controller only, user doesnt send it

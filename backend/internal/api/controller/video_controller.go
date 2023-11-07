@@ -271,8 +271,6 @@ func (vc *videoController) GetAllByFilter(c *fiber.Ctx) error {
 		}
 	}
 
-	logging.Log.Debugf("groupIds: %v", groupIds)
-
 	videos, err := vc.videoRepo.FindMany(c.Context(), filter, value, offset, limit, groupIds)
 	if err != nil {
 		return response.ErrGetRecordsFailed(vc.modelName, err)
@@ -323,8 +321,6 @@ func (vc *videoController) GetOneById(c *fiber.Ctx) error {
 			return response.ErrGetRecordsFailed("groups", err)
 		}
 	}
-
-	logging.Log.Debugf("groupIds: %v", groupIds)
 
 	video, err := vc.videoRepo.FindOne(c.Context(), "id", videoId, groupIds)
 	if err != nil {

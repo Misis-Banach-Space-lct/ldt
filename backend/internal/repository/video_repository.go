@@ -138,6 +138,13 @@ func (vr *videoPgRepository) FindOne(c context.Context, filter string, value any
 		return video, err
 	}
 
+	groupIds, err := vr.GetVideoGroupIds(c, video.Id)
+	if err != nil {
+		return video, err
+	}
+
+	video.GroupIds = groupIds
+
 	return video, nil
 }
 
@@ -164,6 +171,13 @@ func (vr *videoPgRepository) FindMany(c context.Context, filter string, value an
 		if err := rows.Scan(&video.Id, &video.Title, &video.Source, &video.ProcessedSource, &video.Status, &video.CreatedAt, &video.UpdatedAt); err != nil {
 			return nil, err
 		}
+
+		groupIds, err := vr.GetVideoGroupIds(c, video.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		video.GroupIds = groupIds
 		videos = append(videos, video)
 	}
 
@@ -210,4 +224,28 @@ func (vr *videoPgRepository) RemoveFromGroup(c context.Context, videoId, groupId
 		where videoId = $1 and groupId = $2
 	`, videoId, groupId)
 	return err
+}
+
+func (vr *videoPgRepository) GetVideoGroupIds(c context.Context, videoId int) ([]int, error) {
+	var groupIds []int
+
+	rows, err := vr.db.Query(c, `
+		select groupId from `+model.VideosTableName+"_"+model.GroupsTableName+`
+		where videoId = $1
+	`, videoId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var groupId int
+		if err := rows.Scan(&groupId); err != nil {
+			return nil, err
+		}
+
+		groupIds = append(groupIds, groupId)
+	}
+
+	return groupIds, nil
 }
