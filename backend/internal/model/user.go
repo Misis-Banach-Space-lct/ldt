@@ -32,8 +32,8 @@ type UserLogin struct {
 type UserCreate struct {
 	Username  string `json:"-"`
 	Password  string `json:"-"`
-	Role      string `json:"role" validate:"oneof=admin viewer"`
-	Email     string `json:"email" validate:"email"`
+	Role      string `json:"role"`
+	Email     string `json:"email"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	GroupId   int    `json:"groupId" validate:"gte=0"`
