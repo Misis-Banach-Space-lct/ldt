@@ -19,7 +19,9 @@ type Router struct {
 
 func NewRouter() (*Router, error) {
 	r := &Router{
-		engine: fiber.New(),
+		engine: fiber.New(fiber.Config{
+			BodyLimit: 500 * 1024 * 1024,
+		}),
 	}
 
 	if err := r.setup(); err != nil {
