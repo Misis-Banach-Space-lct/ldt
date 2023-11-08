@@ -43,5 +43,6 @@ type VideoRepository interface {
 	DeleteOne(c context.Context, videoId int) error
 	AddToGroup(c context.Context, videoId, groupId int) error
 	RemoveFromGroup(c context.Context, videoId, groupId int) error
-	GetVideoGroupIds(c context.Context, videoId int) ([]int, error)
+	GetGroupIds(c context.Context, videoId int) ([]int, error)
+	SetProcessed(c context.Context, videoId int) error
 }

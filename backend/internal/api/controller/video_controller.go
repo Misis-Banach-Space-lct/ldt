@@ -71,7 +71,7 @@ func (vc *videoController) CreateOne(c *fiber.Ctx) error {
 		Source:  "static/videos/" + strings.ReplaceAll(video.Filename, " ", "_"),
 		GroupId: groupId,
 	}
-	// TODO: return video id on create
+
 	videoId, err := vc.videoRepo.InsertOne(c.Context(), videoData)
 	if err != nil {
 		return response.ErrCreateRecordsFailed(vc.modelName, err)
@@ -81,7 +81,7 @@ func (vc *videoController) CreateOne(c *fiber.Ctx) error {
 		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to save video file", err)
 	}
 
-	go service.ProcessVideo(videoId, videoData.Source)
+	go service.ProcessVideo(c.Context(), videoId, videoData.Source, vc.videoRepo)
 
 	return c.Status(http.StatusCreated).JSON(videoData)
 }
@@ -157,11 +157,16 @@ func (vc *videoController) CreateMany(c *fiber.Ctx) error {
 		}
 	}
 
-	// TODO: return video ids on create
-	_, err = vc.videoRepo.InsertMany(c.Context(), videosData)
+	videoIds, err := vc.videoRepo.InsertMany(c.Context(), videosData)
 	if err != nil {
 		return response.ErrCreateRecordsFailed(vc.modelName, err)
 	}
+
+	go func() {
+		for idx, videoId := range videoIds {
+			go service.ProcessVideo(c.Context(), videoId, videosData[idx].Source, vc.videoRepo)
+		}
+	}()
 
 	return c.Status(http.StatusCreated).JSON(videosData)
 }
@@ -312,4 +317,39 @@ func (vc *videoController) UpdateGroup(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusNoContent)
+}
+
+// GetFrames godoc
+//
+//	@Summary		Получение кадров видео
+//	@Description	Получение кадров видео по id
+//	@Tags			videos
+//	@Accept			json
+//	@Produce		json
+//	@Param			id				path		int			true	"Id видео"
+//	@Success		200				{object}	[]string	"Список кадров видео"
+//	@Failure		404				{object}	string		"Кадры видео не найдены"
+//	@Router			/api/v1/videos/{id}/frames [get]
+func (vc *videoController) GetFrames(c *fiber.Ctx) error {
+	videoId, err := c.ParamsInt("id")
+	if err != nil {
+		return response.ErrValidationError("video id", err)
+	}
+
+	framesPath := fmt.Sprintf("static/frames/%d", videoId)
+	if _, err := os.Stat(framesPath); os.IsNotExist(err) {
+		return response.ErrCustomResponse(http.StatusNotFound, "frames not found", nil)
+	}
+
+	files, err := os.ReadDir(framesPath)
+	if err != nil {
+		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
+	}
+
+	var frames []string
+	for _, file := range files {
+		frames = append(frames, fmt.Sprintf("static/frames/%d/%s", videoId, file.Name()))
+	}
+
+	return c.Status(http.StatusOK).JSON(frames)
 }

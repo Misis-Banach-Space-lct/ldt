@@ -142,7 +142,7 @@ func (vr *videoPgRepository) FindOne(c context.Context, filter string, value any
 		return video, err
 	}
 
-	groupIds, err := vr.GetVideoGroupIds(c, video.Id)
+	groupIds, err := vr.GetGroupIds(c, video.Id)
 	if err != nil {
 		return video, err
 	}
@@ -176,7 +176,7 @@ func (vr *videoPgRepository) FindMany(c context.Context, filter string, value an
 			return nil, err
 		}
 
-		groupIds, err := vr.GetVideoGroupIds(c, video.Id)
+		groupIds, err := vr.GetGroupIds(c, video.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -230,7 +230,7 @@ func (vr *videoPgRepository) RemoveFromGroup(c context.Context, videoId, groupId
 	return err
 }
 
-func (vr *videoPgRepository) GetVideoGroupIds(c context.Context, videoId int) ([]int, error) {
+func (vr *videoPgRepository) GetGroupIds(c context.Context, videoId int) ([]int, error) {
 	var groupIds []int
 
 	rows, err := vr.db.Query(c, `
@@ -252,4 +252,13 @@ func (vr *videoPgRepository) GetVideoGroupIds(c context.Context, videoId int) ([
 	}
 
 	return groupIds, nil
+}
+
+func (vr *videoPgRepository) SetProcessed(c context.Context, videoId int) error {
+	_, err := vr.db.Query(c, `
+		update `+model.VideosTableName+`
+		set status = 'processed'
+		where id = $1
+	`, videoId)
+	return err
 }

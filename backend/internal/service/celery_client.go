@@ -1,7 +1,9 @@
 package service
 
 import (
+	"context"
 	"lct/internal/logging"
+	"lct/internal/model"
 	"reflect"
 	"time"
 
@@ -9,7 +11,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-func ProcessVideo(videoId int, videoSource string) {
+func ProcessVideo(c context.Context, videoId int, videoSource string, videoRepo model.VideoRepository) {
 	// create redis connection pool
 	redisPool := &redis.Pool{
 		MaxIdle:     3,                 // maximum number of idle connections in the pool
@@ -42,15 +44,21 @@ func ProcessVideo(videoId int, videoSource string) {
 	// run task
 	asyncResult, err := cli.Delay(taskName, videoId, videoSource)
 	if err != nil {
-		panic(err)
+		logging.Log.Errorf("failed to run the task: %s", err)
+		return
 	}
 
 	// get results from backend with timeout
 	res, err := asyncResult.Get(40 * time.Second)
 	if err != nil {
-		panic(err)
+		logging.Log.Errorf("failed to get task result: %s", err)
+		return
 	}
 
-	// TODO: update video record in db
 	logging.Log.Debugf("result: %+v of type %+v", res, reflect.TypeOf(res))
+
+	if err := videoRepo.SetProcessed(c, videoId); err != nil {
+		logging.Log.Errorf("failed to set video status as processed: %s", err)
+		return
+	}
 }

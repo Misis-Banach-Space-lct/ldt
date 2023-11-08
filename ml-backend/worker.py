@@ -11,7 +11,7 @@ app = Celery(
 
 app.conf.update(
     CELERY_TASK_SERIALIZER="json",
-    CELERY_ACCEPT_CONTENT=["json"],  # Ignore other content
+    CELERY_ACCEPT_CONTENT=["json"],
     CELERY_RESULT_SERIALIZER="json",
     CELERY_ENABLE_UTC=True,
     CELERY_TASK_PROTOCOL=1,
@@ -27,6 +27,7 @@ def process(a, b):
 @app.task
 def get_frames(video_id: int, video_source: str):
     print(f"video_id: {video_id}")
+    time.sleep(10)
     cap = cv2.VideoCapture(video_source)
     try:
         os.mkdir(f"./static/frames/{video_id}")

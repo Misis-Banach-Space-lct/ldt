@@ -29,6 +29,7 @@ func (r *Router) setupVideoRoutes(group fiber.Router) error {
 	videos := group.Group("/videos")
 	videos.Get("/", videoController.GetAllByFilter)
 	videos.Get("/:id", videoController.GetOneById)
+	videos.Get("/:id/frames", videoController.GetFrames)
 
 	videos.Post("/", middleware.CheckAdminRoleMiddleware(), videoController.CreateOne)
 	videos.Post("/many", middleware.CheckAdminRoleMiddleware(), videoController.CreateMany)
