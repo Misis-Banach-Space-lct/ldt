@@ -3,3 +3,6 @@ ml-backend-ggg
 redis_data
 tmp
 __pycache__
+venv
+video.mp4
+runs

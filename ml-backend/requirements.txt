@@ -1,4 +1,4 @@
 celery
 redis
 opencv-python
-ultralytics
+eventlet

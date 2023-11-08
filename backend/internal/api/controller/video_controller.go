@@ -81,7 +81,8 @@ func (vc *videoController) CreateOne(c *fiber.Ctx) error {
 		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to save video file", err)
 	}
 
-	go service.ProcessVideo(c.Context(), videoId, videoData.Source, vc.videoRepo)
+	// go service.ProcessVideoFrames(videoId, videoData.Source)
+	go service.ProcessVideoMl(c.Context(), videoId, videoData.Source, vc.videoRepo)
 
 	return c.Status(http.StatusCreated).JSON(videoData)
 }
@@ -164,7 +165,8 @@ func (vc *videoController) CreateMany(c *fiber.Ctx) error {
 
 	go func() {
 		for idx, videoId := range videoIds {
-			go service.ProcessVideo(c.Context(), videoId, videosData[idx].Source, vc.videoRepo)
+			go service.ProcessVideoFrames(videoId, videosData[idx].Source)
+			go service.ProcessVideoMl(c.Context(), videoId, videosData[idx].Source, vc.videoRepo)
 		}
 	}()
 
@@ -338,7 +340,7 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 
 	framesPath := fmt.Sprintf("static/frames/%d", videoId)
 	if _, err := os.Stat(framesPath); os.IsNotExist(err) {
-		return response.ErrCustomResponse(http.StatusNotFound, "frames not found", nil)
+		return response.ErrCustomResponse(http.StatusNotFound, "frames not found", err)
 	}
 
 	files, err := os.ReadDir(framesPath)

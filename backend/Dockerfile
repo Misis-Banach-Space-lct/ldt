@@ -16,7 +16,6 @@ COPY docs ./docs/
 COPY internal/ ./internal/
 COPY .env .
 
-
 RUN go build -o ./main ./cmd/server/main.go
 
 CMD [ "./main" ]

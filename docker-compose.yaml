@@ -43,13 +43,16 @@ services:
     build:
       context: ./ml-backend
       dockerfile: Dockerfile
-    # command: ['python3', '-m', 'celery', '-A', 'worker', 'worker', '-l', 'info']
+    # command: ["python3", "-m", "celery", "-A", "worker", "worker", "-l", "info", "--pool=eventlet", "-c", "5"]
+    # restart: always
     volumes:
       - backend-static:/app/static
+      - ml-predict:/app/runs
     depends_on:
       - redis
 
 volumes:
+  ml-predict:
   backend-static:
   redis_data:
     driver: local
