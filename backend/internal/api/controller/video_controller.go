@@ -346,9 +346,10 @@ func (vc *videoController) UpdateGroup(c *fiber.Ctx) error {
 //	@Tags			videos
 //	@Accept			json
 //	@Produce		json
-//	@Param			id				path		int			true	"Id видео"
-//	@Success		200				{object}	[]string	"Список кадров видео"
-//	@Failure		404				{object}	string		"Кадры видео не найдены"
+//	@Param			id		path		int			true	"Id видео"
+//	@Param			type	query		string		false	"Тип кадров (processed - обработанные, иначе - исходные)"	enums(processed, default)
+//	@Success		200		{object}	[]string	"Список кадров видео"
+//	@Failure		404		{object}	string		"Кадры видео не найдены"
 //	@Router			/api/v1/videos/{id}/frames [get]
 func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 	videoId, err := c.ParamsInt("id")
@@ -356,19 +357,17 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 		return response.ErrValidationError("video id", err)
 	}
 
-	paths := []string{
-		fmt.Sprintf("static/frames/%d", videoId),
-		fmt.Sprintf("static/processed/frames/%d", videoId),
+	framesType := c.Query("type")
+	var path string
+	if framesType == "processed" {
+		path = fmt.Sprintf("static/processed/frames/%d", videoId)
+	} else {
+		path = fmt.Sprintf("static/frames/%d", videoId)
 	}
 
-	var frames []string
-	for _, path := range paths {
-		curFrames, err := getDirFiles(path)
-		if err != nil {
-			return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
-		}
-
-		frames = append(frames, curFrames...)
+	frames, err := getDirFiles(path)
+	if err != nil {
+		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
 	}
 
 	return c.Status(http.StatusOK).JSON(frames)

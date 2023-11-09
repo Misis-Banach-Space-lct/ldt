@@ -29,6 +29,10 @@ definitions:
         type: string
       firstName:
         type: string
+      groupIds:
+        items:
+          type: integer
+        type: array
       id:
         description: serial
         type: integer
@@ -53,9 +57,6 @@ definitions:
       lastName:
         type: string
       role:
-        enum:
-        - admin
-        - viewer
         type: string
     type: object
   model.UserGroupUpdate:
@@ -69,6 +70,7 @@ definitions:
         minimum: 0
         type: integer
       userId:
+        minimum: 1
         type: integer
     required:
     - action
@@ -91,9 +93,15 @@ definitions:
       createdAt:
         description: default = current timestamp
         type: string
+      groupIds:
+        items:
+          type: integer
+        type: array
       id:
         description: serial
         type: integer
+      processedSource:
+        type: string
       source:
         type: string
       status:
@@ -571,6 +579,40 @@ paths:
           schema:
             type: string
       summary: Получение видео по id
+      tags:
+      - videos
+  /api/v1/videos/{id}/frames:
+    get:
+      consumes:
+      - application/json
+      description: Получение кадров видео по id
+      parameters:
+      - description: Id видео
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Тип кадров (processed - обработанные, иначе - исходные)
+        enum:
+        - processed
+        - default
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список кадров видео
+          schema:
+            items:
+              type: string
+            type: array
+        "404":
+          description: Кадры видео не найдены
+          schema:
+            type: string
+      summary: Получение кадров видео
       tags:
       - videos
   /api/v1/videos/many:
