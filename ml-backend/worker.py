@@ -22,7 +22,7 @@ app.conf.update(
 @app.task
 def process_video(video_id: int, video_source: str):
     print("starting process_video")
-    process(video_id, video_source)
+    print(process(video_id, video_source))
     return
 
 

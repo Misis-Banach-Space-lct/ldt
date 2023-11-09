@@ -1,8 +1,9 @@
-celery
-redis
-opencv-python
-eventlet
-torch
-ultralytics
+celery~=5.3.4
+redis~=5.0.1
+opencv-python~=4.8.1.78
+eventlet~=0.33.3
+torch~=2.1.0
+ultralytics~=8.0.207
 lapx~=0.5.5
 Cython~=3.0.5
+pydantic~=2.4.2
