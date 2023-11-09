@@ -153,6 +153,12 @@ func (ur *userPgRepository) FindMany(c context.Context, filter string, value any
 		if err := rows.Scan(&user.Id, &user.Username, &user.Password, &user.Role, &user.Email, &user.FirstName, &user.LastName, &user.CreatedAt, &user.UpdatedAt); err != nil {
 			return nil, err
 		}
+
+		groupIds, err := ur.GetGroups(c, user.Id)
+		if err != nil {
+			return nil, err
+		}
+		user.GroupIds = groupIds
 		users = append(users, user)
 	}
 

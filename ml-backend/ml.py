@@ -39,14 +39,17 @@ def process(video_id: int, video_source: str):
             frames.append(res)
 
     try:
-        os.mkdir(f"{BASE_PATH}/processed/frames/{video_id}")
+        os.mkdir(f"{BASE_PATH}/static/processed/frames/{video_id}")
     except:
         pass
+
     cap = cv2.VideoCapture(f"{BASE_PATH}/{video_source}")
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     save_cadrs(frames, model_predictor, fps, VID_STRIDE, video_id)
     Post_Processing(frames, video_id)
+
+    cap.release()
 
 
 # Поиск шаров и тележек
@@ -73,6 +76,7 @@ def process_cadr(result_model_predictor, start_conf):
 
 
 def save_cadrs(result_after_track, model_predictor, fps, vid_stride, video_id: int):
+    print("save cadrs")
     res = result_after_track
     objects = {}
 
@@ -124,13 +128,10 @@ def save_cadrs(result_after_track, model_predictor, fps, vid_stride, video_id: i
                     image[y1:y2, x1:x2] = crop_img
                     # cv2.imwrite('./cadr3/' + str(num_cadr) + '.jpg', image)
                     # objects[id].path = str(num_cadr) + '.jpg'
-                    try:
-                        os.mkdir(f"{BASE_PATH}/static/processed/frames/{video_id}/")
-                    except Exception as e:
-                        pass
 
                     save_path = f"{BASE_PATH}/static/processed/frames/{video_id}/frame{num_cadr * (1/fps) * vid_stride}.jpg"
                     cv2.imwrite(save_path, image)
+                    print(f"saved cadr {save_path}")
                     objects[id].path = save_path
 
     # cadrs = []
@@ -240,6 +241,7 @@ def select_objects(objects, result_after_tracking):
 
 
 def Show(preds, result_after_tracking, video_id: int):
+    print("save frames")
     x = 0
     for _, obj in preds.items():
         x += 1
@@ -262,6 +264,7 @@ def Show(preds, result_after_tracking, video_id: int):
             2,
         )
         cv2.imwrite(f"{BASE_PATH}/static/processed/frames/{video_id}/{x}.jpg", image)
+        print(f"saved frame {BASE_PATH}/static/processed/frames/{video_id}/{x}.jpg")
 
 
 def Post_Processing(res, video_id: int):

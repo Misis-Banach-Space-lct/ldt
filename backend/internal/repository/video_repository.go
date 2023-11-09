@@ -282,11 +282,16 @@ func (vr *videoPgRepository) SetCompleted(c context.Context, videoId int, fileNa
 		where id = $1
 	`, videoId)
 
-	// TODO: fix processed path
-	// _, err = vr.db.Query(c, fmt.Sprintf(`
-	// 	update `+model.VideosTableName+`
-	// 	set processedPath = 'static/processed/videos/%s/%s'
-	// 	where id = $1
-	// `, predict, fileName), videoId)
+	var processedSource string
+	if videoId == 1 {
+		processedSource = fmt.Sprintf("static/processed/videos/predict/%s", fileName)
+	} else {
+		processedSource = fmt.Sprintf("static/processed/videos/predict%d/%s", videoId, fileName)
+	}
+	_, err = vr.db.Query(c, `
+		update `+model.VideosTableName+`
+		set processedSource = $1
+		where id = $2
+	`, processedSource, videoId)
 	return err
 }
