@@ -114,8 +114,8 @@ func ProcessVideoMl(c context.Context, videoId int, videoSource, fileName string
 
 	fileNameAvi := strings.Replace(fileName, ".mp4", ".avi", 1)
 	path := fmt.Sprintf("static/processed/videos/predict%d/", videoId)
-	// convert video in static/processed/videos/predict{videoId}/{fileNameAvi}.avi to .mp4 using ffmpeg and os/exec
-	cmd := exec.Command("ffmpeg", "-i", path+fileNameAvi, "-vcodec", "copy", "-acodec", "copy", path+fileName)
+	// ffmpeg -i file.avi -c:v libx264 -pix_fmt yuv420p file.mp4
+	cmd := exec.Command("ffmpeg", "-i", path+fileNameAvi, "-c:v", "libx264", "-pix_fmt", "yuv420p", path+fileName)
 	if err := cmd.Run(); err != nil {
 		logging.Log.Errorf("failed to convert video to mp4: %s", err)
 		return
