@@ -113,11 +113,17 @@ func ProcessVideoMl(c context.Context, videoId int, videoSource, fileName string
 	}
 
 	fileNameAvi := strings.Replace(fileName, ".mp4", ".avi", 1)
-	path := fmt.Sprintf("/static/processed/videos/predict%d/", videoId)
-	// convert video in /static/processed/videos/predict{videoId}/{fileNameAvi}.avi to .mp4 using ffmpeg and os/exec
+	path := fmt.Sprintf("static/processed/videos/predict%d/", videoId)
+	// convert video in static/processed/videos/predict{videoId}/{fileNameAvi}.avi to .mp4 using ffmpeg and os/exec
 	cmd := exec.Command("ffmpeg", "-i", path+fileNameAvi, "-c:v", "copy", "-c:a", "copy", path+fileName)
 	if err := cmd.Run(); err != nil {
 		logging.Log.Errorf("failed to convert video to mp4: %s", err)
+		return
+	}
+
+	cmd = exec.Command("rm", path+fileNameAvi)
+	if err := cmd.Run(); err != nil {
+		logging.Log.Errorf("failed to remove .avi video: %s", err)
 		return
 	}
 }
