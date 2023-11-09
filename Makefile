@@ -11,7 +11,7 @@ debug: swag
 
 local:
 	docker compose up --build -d
-	cd ml-backend && pip install -r requirements.txt && source venv/bin/activate && python3 -m celery -A worker worker -l info --pool=eventlet
+	cd ml-backend && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt && python3 -m celery -A worker worker -l info --pool=eventlet
 
 local-with-logs:
 	docker compose up --build
