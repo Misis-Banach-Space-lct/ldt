@@ -58,7 +58,7 @@ func ProcessVideoFrames(videoId int, videoSource string) {
 	logging.Log.Debugf("result: %+v of type %+v", res, reflect.TypeOf(res))
 }
 
-func ProcessVideoMl(c context.Context, videoId int, videoSource string, videoRepo model.VideoRepository) {
+func ProcessVideoMl(c context.Context, videoId int, videoSource, fileName string, videoRepo model.VideoRepository) {
 	// create redis connection pool
 	redisPool := &redis.Pool{
 		MaxIdle:     3,                 // maximum number of idle connections in the pool
@@ -104,7 +104,7 @@ func ProcessVideoMl(c context.Context, videoId int, videoSource string, videoRep
 
 	logging.Log.Debugf("result: %+v of type %+v", res, reflect.TypeOf(res))
 
-	if err := videoRepo.SetProcessed(c, videoId); err != nil {
+	if err := videoRepo.SetCompleted(c, videoId, fileName); err != nil {
 		logging.Log.Errorf("failed to set video status as processed: %s", err)
 		return
 	}
