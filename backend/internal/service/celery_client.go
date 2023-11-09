@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"lct/internal/logging"
 	"lct/internal/model"
+	"os/exec"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/gocelery/gocelery"
@@ -106,6 +109,15 @@ func ProcessVideoMl(c context.Context, videoId int, videoSource, fileName string
 
 	if err := videoRepo.SetCompleted(c, videoId, fileName); err != nil {
 		logging.Log.Errorf("failed to set video status as processed: %s", err)
+		return
+	}
+
+	fileNameAvi := strings.Replace(fileName, ".mp4", ".avi", 1)
+	path := fmt.Sprintf("/static/processed/videos/predict%d/", videoId)
+	// convert video in /static/processed/videos/predict{videoId}/{fileNameAvi}.avi to .mp4 using ffmpeg and os/exec
+	cmd := exec.Command("ffmpeg", "-i", path+fileNameAvi, "-c:v", "copy", "-c:a", "copy", path+fileName)
+	if err := cmd.Run(); err != nil {
+		logging.Log.Errorf("failed to convert video to mp4: %s", err)
 		return
 	}
 }
