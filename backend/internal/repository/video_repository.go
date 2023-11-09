@@ -6,6 +6,7 @@ import (
 	"lct/internal/logging"
 	"lct/internal/model"
 	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -288,10 +289,12 @@ func (vr *videoPgRepository) SetCompleted(c context.Context, videoId int, fileNa
 	} else {
 		processedSource = fmt.Sprintf("static/processed/videos/predict%d/%s", videoId, fileName)
 	}
+	processedSourceAvi := strings.Replace(processedSource, ".mp4", ".avi", 1)
+
 	_, err = vr.db.Query(c, `
 		update `+model.VideosTableName+`
 		set processedSource = $1
 		where id = $2
-	`, processedSource, videoId)
+	`, processedSourceAvi, videoId)
 	return err
 }
