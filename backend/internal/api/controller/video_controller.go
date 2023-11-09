@@ -38,6 +38,24 @@ func NewVideoController(vr model.VideoRepository, ur model.UserRepository, gr mo
 	}
 }
 
+func getDirFiles(framesPath string) ([]string, error) {
+	if _, err := os.Stat(framesPath); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	files, err := os.ReadDir(framesPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var frames []string
+	for _, file := range files {
+		frames = append(frames, fmt.Sprintf("%s/%s", framesPath, file.Name()))
+	}
+
+	return frames, nil
+}
+
 // CreateOne godoc
 //
 //	@Summary		Создание видео
@@ -338,19 +356,19 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 		return response.ErrValidationError("video id", err)
 	}
 
-	framesPath := fmt.Sprintf("static/frames/%d", videoId)
-	if _, err := os.Stat(framesPath); os.IsNotExist(err) {
-		return response.ErrCustomResponse(http.StatusNotFound, "frames not found", err)
-	}
-
-	files, err := os.ReadDir(framesPath)
-	if err != nil {
-		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
+	paths := []string{
+		fmt.Sprintf("static/frames/%d", videoId),
+		fmt.Sprintf("static/processed/frames/%d", videoId),
 	}
 
 	var frames []string
-	for _, file := range files {
-		frames = append(frames, fmt.Sprintf("static/frames/%d/%s", videoId, file.Name()))
+	for _, path := range paths {
+		curFrames, err := getDirFiles(path)
+		if err != nil {
+			return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
+		}
+
+		frames = append(frames, curFrames...)
 	}
 
 	return c.Status(http.StatusOK).JSON(frames)
