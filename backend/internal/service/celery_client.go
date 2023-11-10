@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"lct/internal/logging"
 	"lct/internal/model"
+	"os/exec"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/gocelery/gocelery"
@@ -70,18 +73,18 @@ func ProcessVideoMl(c context.Context, videoId int, videoSource, fileName string
 		return
 	}
 
-	// fileNameAvi := strings.Replace(fileName, ".mp4", ".avi", 1)
-	// path := fmt.Sprintf("static/processed/videos/predict%d/", videoId)
-	// // ffmpeg -i file.avi -c:v libx264 -pix_fmt yuv420p file.mp4
-	// cmd := exec.Command("ffmpeg", "-i", path+fileNameAvi, "-c:v", "libx264", "-pix_fmt", "yuv420p", path+fileName)
-	// if err := cmd.Run(); err != nil {
-	// 	logging.Log.Errorf("failed to convert video to mp4: %s", err)
-	// 	return
-	// }
+	fileNameAvi := strings.Replace(fileName, ".mp4", ".avi", 1)
+	path := fmt.Sprintf("static/processed/videos/predict%d/", videoId)
+	// ffmpeg -i file.avi -c:v libx264 -pix_fmt yuv420p file.mp4
+	cmd := exec.Command("ffmpeg", "-i", path+fileNameAvi, "-c:v", "libx264", "-pix_fmt", "yuv420p", path+fileName)
+	if err := cmd.Run(); err != nil {
+		logging.Log.Errorf("failed to convert video to mp4: %s", err)
+		return
+	}
 
-	// cmd = exec.Command("rm", path+fileNameAvi)
-	// if err := cmd.Run(); err != nil {
-	// 	logging.Log.Errorf("failed to remove .avi video: %s", err)
-	// 	return
-	// }
+	cmd = exec.Command("rm", path+fileNameAvi)
+	if err := cmd.Run(); err != nil {
+		logging.Log.Errorf("failed to remove .avi video: %s", err)
+		return
+	}
 }
