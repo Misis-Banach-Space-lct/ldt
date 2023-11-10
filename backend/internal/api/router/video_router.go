@@ -34,6 +34,7 @@ func (r *Router) setupVideoRoutes(group fiber.Router) error {
 	videos.Post("/", middleware.CheckAdminRoleMiddleware(), videoController.CreateOne)
 	videos.Post("/many", middleware.CheckAdminRoleMiddleware(), videoController.CreateMany)
 	videos.Post("/updateGroup", middleware.CheckAdminRoleMiddleware(), videoController.UpdateGroup)
+	videos.Delete("/:id", middleware.CheckAdminRoleMiddleware(), videoController.DeleteOne)
 
 	return nil
 }

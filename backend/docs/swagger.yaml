@@ -608,6 +608,43 @@ paths:
       tags:
       - videos
   /api/v1/videos/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление видео по id (доступно только для администраторов)
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Id видео
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Видео успешно удалено
+          schema:
+            type: string
+        "400":
+          description: Ошибка при удалении видео
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Удаление видео
+      tags:
+      - videos
     get:
       consumes:
       - application/json

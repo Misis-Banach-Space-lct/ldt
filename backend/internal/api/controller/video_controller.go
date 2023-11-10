@@ -375,3 +375,30 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusOK).JSON(frames)
 }
+
+// DeleteOne godoc
+//
+//	@Summary		Удаление видео
+//	@Description	Удаление видео по id (доступно только для администраторов)
+//	@Tags			videos
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string	true	"Authentication header"
+//	@Param			id				path		int		true	"Id видео"
+//	@Success		204				{object}	string	"Видео успешно удалено"
+//	@Failure		400				{object}	string	"Ошибка при удалении видео"
+//	@Failure		403				{object}	string	"Доступ запрещен"
+//	@Failure		422				{object}	string	"Неверный формат данных"
+//	@Router			/api/v1/videos/{id} [delete]
+func (vc *videoController) DeleteOne(c *fiber.Ctx) error {
+	videoId, err := c.ParamsInt("id")
+	if err != nil {
+		return response.ErrValidationError("video id", err)
+	}
+
+	if err := vc.videoRepo.DeleteOne(c.Context(), videoId); err != nil {
+		return response.ErrDeleteRecordsFailed(vc.modelName, err)
+	}
+
+	return c.SendStatus(http.StatusNoContent)
+}
