@@ -1,13 +1,13 @@
+import os
 import random
 import numpy as np
 import torch
+import cv2
 from ultralytics import RTDETR
 from ultralytics import YOLO
-import cv2
-import os
-
-from src.detect_stationary import save_cadrs
-from src.detect_human_stationary import post_processing
+from pydantic import BaseModel
+from src.detect_stationary import save_cadrs, DetectedObject
+from src.detect_human_stationary import post_processing, DetectedHumanObject
 
 random.seed(42)
 np.random.seed(42)
@@ -16,12 +16,20 @@ torch.manual_seed(42)
 names = {0: "animal", 1: "balloon", 2: "cart", 3: "person"}
 
 
+class MlResult(BaseModel):
+    fileName: list
+    videoId: int
+    timeCode: float
+    timeCodeMl: float
+    detectedClassId: int
+
+
 def process(video_id: int, video_path: str):
     model = YOLO("weights/model.pt")
     model_predictor = RTDETR("weights/model_predictor.pt")
     model_cart = YOLO("weights/yolov8n.pt")
 
-    cap = cv2.VideoCapture(video_path)
+    cap = cv2.VideoCapture(f"../{video_path}")
     fps = cap.get(cv2.CAP_PROP_FPS)
     frame_cnt = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     if fps == 0:
@@ -58,7 +66,7 @@ def process(video_id: int, video_path: str):
     except Exception as e:
         print(str(e))
 
-    saved = save_cadrs(
+    saved: list[DetectedObject] = save_cadrs(
         frames,
         model_predictor,
         model_cart,
@@ -66,6 +74,20 @@ def process(video_id: int, video_path: str):
         vid_stride,
         save_path=f"../static/processed/frames/{video_id}",
     )
+    savedModels: list[MlResult] = []
+    try:
+        savedModels = [
+            MlResult(
+                fileName=[path.replace("../", "") for path in obj.path],
+                videoId=video_id,
+                detectedClassId=obj.cls,
+                timeCode=obj.timestamp,
+                timeCodeMl=obj.timestampML,
+            )
+            for obj in saved
+        ]
+    except ValueError as e:
+        print(str(e))
 
     """
     if len(saved) > 0:
@@ -76,9 +98,23 @@ def process(video_id: int, video_path: str):
             print(f"DetectedClassId - {save.cls}")
     """
 
-    human_saved = post_processing(
+    human_saved: dict[int, DetectedHumanObject] = post_processing(
         frames, fps, vid_stride, save_path=f"../static/processed/frames_h/{video_id}"
     )
+    humanModel: list[MlResult] = []
+    try:
+        humanModels = [
+            MlResult(
+                fileName=[path.replace("../", "") for path in obj.path],
+                videoId=video_id,
+                timeCode=obj.timestamp,
+                timeCodeMl=obj.timestampML,
+                detectedClassId=obj.cls,
+            )
+            for obj in human_saved.values()
+        ]
+    except ValueError as e:
+        print(str(e))
 
     """
     if len(human_saved) > 0:
@@ -89,4 +125,4 @@ def process(video_id: int, video_path: str):
             print(f"DetectedClassId - {human_saved[key].cls}")
     """
 
-    return saved, human_saved
+    return savedModels, humanModels

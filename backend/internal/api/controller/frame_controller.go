@@ -10,20 +10,48 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type learnFrameController struct {
+type frameController struct {
 	learnFrameRepo model.LearnFrameRepository
 	userRepo       model.UserRepository
+	mlFrameRepo    model.MlFrameRepository
 	validator      *validator.Validate
 	modelName      string
 }
 
-func NewLearnFrameController(lr model.LearnFrameRepository, ur model.UserRepository) learnFrameController {
-	return learnFrameController{
+func NewFrameController(lr model.LearnFrameRepository, ur model.UserRepository, mr model.MlFrameRepository) frameController {
+	return frameController{
 		learnFrameRepo: lr,
 		userRepo:       ur,
+		mlFrameRepo:    mr,
 		validator:      validator.New(validator.WithRequiredStructEnabled()),
 		modelName:      model.LearnFrameTableName,
 	}
+}
+
+// GetAll godoc
+//
+//	@Summary		Получение всех кадров с предсказанными классами
+//	@Description	Получение всех кадров с предсказанными классами
+//	@Tags			mlFrames
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string			true	"Authentication header"
+//	@Param			videoId			path		int				true	"Id видео"
+//	@Success		200				{object}	[]model.MlFrame	"Полученные кадры"
+//	@Failure		422				{object}	string			"Неверный формат данных"
+//	@Router			/api/v1/mlFrames/{videoId} [get]
+func (fc *frameController) GetAll(c *fiber.Ctx) error {
+	videoId, err := c.ParamsInt("videoId")
+	if err != nil {
+		return response.ErrValidationError("videoId", err)
+	}
+
+	frames, err := fc.mlFrameRepo.FindMany(c.Context(), videoId)
+	if err != nil {
+		return response.ErrGetRecordsFailed(fc.modelName, err)
+	}
+
+	return c.Status(http.StatusOK).JSON(frames)
 }
 
 // CreateOne godoc
@@ -45,7 +73,7 @@ func NewLearnFrameController(lr model.LearnFrameRepository, ur model.UserReposit
 //	@Failure		400				{object}	string	"Ошибка при создании кадра для обучения"
 //	@Failure		422				{object}	string	"Неверный формат данных"
 //	@Router			/api/v1/learnFrames [post]
-func (lc *learnFrameController) CreateOne(c *fiber.Ctx) error {
+func (lc *frameController) CreateOne(c *fiber.Ctx) error {
 	width, _ := strconv.Atoi(c.FormValue("width"))
 	height, _ := strconv.Atoi(c.FormValue("height"))
 	x, _ := strconv.Atoi(c.FormValue("x"))

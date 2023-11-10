@@ -62,12 +62,12 @@ def count_objects(result_after_tracking: list, fps: float, vid_stride: int) -> d
 
 def select_objects(
     objects: dict, result_after_tracking: list, vid_stride: int, save_path: str
-) -> dict:
+) -> dict[int, DetectedHumanObject]:
     if len(result_after_tracking) * vid_stride < 2600:  # меньше 2 минут
         print(
             "Видео слишком короткое для корректного выявления для стационарных торговцев, могут быть ошибки!"
         )
-    preds = {}
+    preds: dict[int, DetectedHumanObject] = {}
 
     all_frames = len(result_after_tracking)
     boundary_zone = int(

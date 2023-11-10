@@ -44,5 +44,5 @@ type VideoRepository interface {
 	AddToGroup(c context.Context, videoId, groupId int) error
 	RemoveFromGroup(c context.Context, videoId, groupId int) error
 	GetGroupIds(c context.Context, videoId int) ([]int, error)
-	SetCompleted(c context.Context, videoId int, fileName string) error
+	SetCompleted(c context.Context, videoId int, processedSource string) error
 }

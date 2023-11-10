@@ -1,7 +1,8 @@
 import os
 import cv2
 from celery import Celery
-from ml import process
+from pydantic import BaseModel
+from ml import process, MlResult
 
 app = Celery(
     "tasks",
@@ -19,11 +20,22 @@ app.conf.update(
 )
 
 
+class Response(BaseModel):
+    cadrs: list[MlResult]
+    humans: list[MlResult]
+    processedSource: str
+
+
 @app.task
 def process_video(video_id: int, video_source: str):
     print("starting process_video")
-    print(process(video_id, video_source))
-    return
+    res = process(video_id, video_source)
+
+    processed_source = os.listdir("../static/processed/videos")
+    processed_source.sort()
+    return Response(
+        cadrs=res[0], humans=res[1], processedSource=processed_source[-1]
+    ).model_dump_json()
 
 
 @app.task

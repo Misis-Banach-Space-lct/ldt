@@ -46,9 +46,9 @@ def save_cadrs(
     fps: float,
     vid_stride: int,
     save_path: str,
-) -> list:
+) -> list[DetectedObject]:
     res = result_after_track
-    objects = {}
+    objects: dict[int, DetectedObject] = {}
 
     num_cadr = 0
     for cadr in res:
@@ -101,7 +101,7 @@ def save_cadrs(
                     objects[id].timestamp = timestamp_orig
                     objects[id].timestampML = timestamp_ml
 
-    cadrs = []
+    cadrs: list[DetectedObject] = []
     for _, obj in objects.items():
         if obj.path != []:
             cadrs.append(obj)

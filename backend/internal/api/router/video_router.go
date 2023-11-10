@@ -12,19 +12,24 @@ import (
 )
 
 func (r *Router) setupVideoRoutes(group fiber.Router) error {
+	message := "videos router: %+v"
 	videoRepository, err := repository.NewVideoPgRepository(database.PgConn.GetPool())
 	if err != nil {
-		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("videos router: %+v", err)}
+		return model.ErrRouterSetupFailed{Message: fmt.Sprintf(message, err)}
 	}
 	userRepository, err := repository.NewUserPgRepository(database.PgConn.GetPool())
 	if err != nil {
-		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("videos router: %+v", err)}
+		return model.ErrRouterSetupFailed{Message: fmt.Sprintf(message, err)}
 	}
 	groupRepository, err := repository.NewGroupPgRepository(database.PgConn.GetPool())
 	if err != nil {
-		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("videos router: %+v", err)}
+		return model.ErrRouterSetupFailed{Message: fmt.Sprintf(message, err)}
 	}
-	videoController := controller.NewVideoController(videoRepository, userRepository, groupRepository)
+	mlFrameRepository, err := repository.NewMlFramePgRepository(database.PgConn.GetPool())
+	if err != nil {
+		return model.ErrRouterSetupFailed{Message: fmt.Sprintf(message, err)}
+	}
+	videoController := controller.NewVideoController(videoRepository, userRepository, groupRepository, mlFrameRepository)
 
 	videos := group.Group("/videos")
 	videos.Get("/", videoController.GetAllByFilter)

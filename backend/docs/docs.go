@@ -283,6 +283,54 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/mlFrames/{videoId}": {
+            "get": {
+                "description": "Получение всех кадров с предсказанными классами",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mlFrames"
+                ],
+                "summary": "Получение всех кадров с предсказанными классами",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authentication header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Id видео",
+                        "name": "videoId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Полученные кадры",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.MlFrame"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users": {
             "get": {
                 "description": "Получение всех пользователей с возможностью пагинации (доступно только для администраторов)",
@@ -1052,6 +1100,31 @@ const docTemplate = `{
             "properties": {
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "model.MlFrame": {
+            "type": "object",
+            "properties": {
+                "detectedClassId": {
+                    "type": "integer"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "serial",
+                    "type": "integer"
+                },
+                "timeCode": {
+                    "type": "number"
+                },
+                "timeCodeMl": {
+                    "type": "number"
+                },
+                "videoId": {
+                    "description": "fk",
+                    "type": "integer"
                 }
             }
         },

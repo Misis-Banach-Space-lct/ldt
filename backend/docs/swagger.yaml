@@ -19,6 +19,23 @@ definitions:
     required:
     - title
     type: object
+  model.MlFrame:
+    properties:
+      detectedClassId:
+        type: integer
+      fileName:
+        type: string
+      id:
+        description: serial
+        type: integer
+      timeCode:
+        type: number
+      timeCodeMl:
+        type: number
+      videoId:
+        description: fk
+        type: integer
+    type: object
   model.User:
     properties:
       createdAt:
@@ -330,6 +347,38 @@ paths:
       summary: Создание кадра для обучения
       tags:
       - learnFrames
+  /api/v1/mlFrames/{videoId}:
+    get:
+      consumes:
+      - application/json
+      description: Получение всех кадров с предсказанными классами
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Id видео
+        in: path
+        name: videoId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Полученные кадры
+          schema:
+            items:
+              $ref: '#/definitions/model.MlFrame'
+            type: array
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Получение всех кадров с предсказанными классами
+      tags:
+      - mlFrames
   /api/v1/users:
     get:
       consumes:

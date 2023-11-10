@@ -275,24 +275,24 @@ func (vr *videoPgRepository) GetGroupIds(c context.Context, videoId int) ([]int,
 	return groupIds, nil
 }
 
-func (vr *videoPgRepository) SetCompleted(c context.Context, videoId int, fileName string) error {
-	_, err := vr.db.Query(c, `
+func (vr *videoPgRepository) SetCompleted(c context.Context, videoId int, processedSource string) error {
+	tx, err := vr.db.Begin(c)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(c)
+
+	_, err = tx.Exec(c, `
 		update `+model.VideosTableName+`
 		set status = 'completed'
 		where id = $1
 	`, videoId)
 
-	var processedSource string
-	if videoId == 1 {
-		processedSource = fmt.Sprintf("static/processed/videos/predict/%s", fileName)
-	} else {
-		processedSource = fmt.Sprintf("static/processed/videos/predict%d/%s", videoId, fileName)
-	}
-
-	_, err = vr.db.Query(c, `
+	_, err = tx.Exec(c, `
 		update `+model.VideosTableName+`
 		set processedSource = $1
 		where id = $2
 	`, processedSource, videoId)
-	return err
+
+	return tx.Commit(c)
 }

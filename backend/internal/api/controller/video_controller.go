@@ -21,20 +21,22 @@ import (
 )
 
 type videoController struct {
-	videoRepo model.VideoRepository
-	userRepo  model.UserRepository
-	groupRepo model.GroupRepository
-	validator *validator.Validate
-	modelName string
+	videoRepo   model.VideoRepository
+	userRepo    model.UserRepository
+	groupRepo   model.GroupRepository
+	mlFrameRepo model.MlFrameRepository
+	validator   *validator.Validate
+	modelName   string
 }
 
-func NewVideoController(vr model.VideoRepository, ur model.UserRepository, gr model.GroupRepository) videoController {
+func NewVideoController(vr model.VideoRepository, ur model.UserRepository, gr model.GroupRepository, mr model.MlFrameRepository) videoController {
 	return videoController{
-		videoRepo: vr,
-		userRepo:  ur,
-		groupRepo: gr,
-		validator: validator.New(validator.WithRequiredStructEnabled()),
-		modelName: model.VideosTableName,
+		videoRepo:   vr,
+		userRepo:    ur,
+		groupRepo:   gr,
+		mlFrameRepo: mr,
+		validator:   validator.New(validator.WithRequiredStructEnabled()),
+		modelName:   model.VideosTableName,
 	}
 }
 
@@ -95,7 +97,7 @@ func (vc *videoController) CreateOne(c *fiber.Ctx) error {
 		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to save video file", err)
 	}
 
-	go service.ProcessVideoMl(c.Context(), videoId, videoData.Source, video.Filename, vc.videoRepo)
+	go service.ProcessVideoMl(videoId, videoData.Source, video.Filename, vc.videoRepo, vc.mlFrameRepo)
 	go service.ProcessVideoFrames(videoId, videoData.Source)
 
 	return c.Status(http.StatusCreated).JSON(videoData)
@@ -179,7 +181,7 @@ func (vc *videoController) CreateMany(c *fiber.Ctx) error {
 
 	go func() {
 		for idx, videoId := range videoIds {
-			go service.ProcessVideoMl(c.Context(), videoId, videosData[idx].Source, zipReader.File[idx].FileInfo().Name(), vc.videoRepo)
+			go service.ProcessVideoMl(videoId, videosData[idx].Source, zipReader.File[idx].FileInfo().Name(), vc.videoRepo, vc.mlFrameRepo)
 			go service.ProcessVideoFrames(videoId, videosData[idx].Source)
 		}
 	}()
