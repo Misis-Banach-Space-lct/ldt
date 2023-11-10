@@ -42,7 +42,7 @@ services:
       - ./static/processed/frames:/app/static/processed/frames
       - ./static/processed/frames_h:/app/static/processed/frames_h
       - ./static/learn_frames:/app/static/learn_frames
-      - ./stream_config.json:/app/stream_config.json
+      - ./config/stream_config.json:/app/stream_config.json
 
   frontend:
     build:
@@ -60,9 +60,10 @@ services:
     ports:
       - "10002:10002"
     volumes:
-      - ./stream_config.json:/app/stream_config.json
+      - ./config/stream_config.json:/app/stream_config.json
 
 volumes:
+  config:
   static:
   redis_data:
     driver: local
