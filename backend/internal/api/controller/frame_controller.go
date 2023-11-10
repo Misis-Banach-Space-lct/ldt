@@ -39,7 +39,7 @@ func NewFrameController(lr model.LearnFrameRepository, ur model.UserRepository, 
 //	@Param			videoId			path		int				true	"Id видео"
 //	@Success		200				{object}	[]model.MlFrame	"Полученные кадры"
 //	@Failure		422				{object}	string			"Неверный формат данных"
-//	@Router			/api/v1/mlFrames/{videoId} [get]
+//	@Router			/api/v1/frames/ml/{videoId} [get]
 func (fc *frameController) GetAll(c *fiber.Ctx) error {
 	videoId, err := c.ParamsInt("videoId")
 	if err != nil {
@@ -72,7 +72,7 @@ func (fc *frameController) GetAll(c *fiber.Ctx) error {
 //	@Success		201				{object}	string	"Кадр для обучения успешно создан"
 //	@Failure		400				{object}	string	"Ошибка при создании кадра для обучения"
 //	@Failure		422				{object}	string	"Неверный формат данных"
-//	@Router			/api/v1/learnFrames [post]
+//	@Router			/api/v1/frames/learn [post]
 func (lc *frameController) CreateOne(c *fiber.Ctx) error {
 	width, _ := strconv.Atoi(c.FormValue("width"))
 	height, _ := strconv.Atoi(c.FormValue("height"))
