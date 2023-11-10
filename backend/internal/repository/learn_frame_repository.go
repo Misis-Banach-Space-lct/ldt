@@ -25,7 +25,7 @@ func NewLearnFramePgRepository(db *pgxpool.Pool) (model.LearnFrameRepository, er
 			createdAt timestamp default current_timestamp,
 			updatedAt timestamp default current_timestamp,
 			foreign key (userId) references `+model.UsersTableName+`(id),
-			foreign key (videoId) references `+model.VideosTableName+`(id),
+			foreign key (videoId) references `+model.VideosTableName+`(id)
 	);`)
 	if err != nil {
 		return nil, err
