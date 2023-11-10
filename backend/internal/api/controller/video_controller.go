@@ -372,7 +372,7 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 	for _, path := range paths {
 		curFrames, err := getDirFiles(path)
 		if err != nil {
-			return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
+			continue
 		}
 		frames = append(frames, curFrames...)
 	}
