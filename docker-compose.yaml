@@ -58,9 +58,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "10002:10002"
-    volumes:
-      - ./config:/app/config
+    - "10002:10002"
 
 volumes:
   config:

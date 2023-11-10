@@ -1,0 +1,24 @@
+{
+  "server": {
+    "debug": true,
+    "http_debug": false,
+    "http_demo": true,
+    "http_dir": "web",
+    "http_port": ":10002",
+    "https": false,
+    "log_level": "debug",
+    "rtsp_port": ":5541"
+  },
+  "streams": {
+    "27aec28e-6181-4753-9acd-0456a75f0289": {
+      "channels": {
+        "0": {
+          "url": "rtsp://admin:A1234567@188.170.176.190:8028/Streaming/Channels/101?transportmode=unicast&profile=Profile_1",
+          "debug": false,
+          "audio": false
+        }
+      },
+      "name": "111111111"
+    }
+  }
+}
