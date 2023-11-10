@@ -74,7 +74,12 @@ func ProcessVideoMl(c context.Context, videoId int, videoSource, fileName string
 	}
 
 	fileNameAvi := strings.Replace(fileName, ".mp4", ".avi", 1)
-	path := fmt.Sprintf("static/processed/videos/predict%d/", videoId)
+	var path string
+	if videoId == 1 {
+		path = "static/processed/videos/predict/"
+	} else {
+		path = fmt.Sprintf("static/processed/videos/predict%d/", videoId)
+	}
 	// ffmpeg -i file.avi -c:v libx264 -pix_fmt yuv420p file.mp4
 	cmd := exec.Command("ffmpeg", "-i", path+fileNameAvi, "-c:v", "libx264", "-pix_fmt", "yuv420p", path+fileName)
 	if err := cmd.Run(); err != nil {
