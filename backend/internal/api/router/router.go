@@ -63,6 +63,9 @@ func (r *Router) setup() error {
 	if err := r.setupVideoRoutes(v1); err != nil {
 		return err
 	}
+	if err := r.setupLearnFrameRoutes(v1); err != nil {
+		return err
+	}
 	if err := database.PgConn.CreateJoinTables(); err != nil {
 		return err
 	}

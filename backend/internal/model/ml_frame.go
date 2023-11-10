@@ -2,7 +2,7 @@ package model
 
 import "context"
 
-var FramesTableName = "frames"
+var FramesTableName = "ml_frames"
 
 type MlFrame struct {
 	Id              int    `json:"id"`      // serial

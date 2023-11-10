@@ -41,6 +41,7 @@ services:
       - ./static/processed/videos:/app/static/processed/videos
       - ./static/processed/frames:/app/static/processed/frames
       - ./static/processed/frames_h:/app/static/processed/frames_h
+      - ./static/learn_frames:/app/static/learn_frames
 
   frontend:
     build:
