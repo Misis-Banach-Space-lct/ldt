@@ -33,17 +33,17 @@ func NewLearnFrameController(lr model.LearnFrameRepository, ur model.UserReposit
 //	@Tags			learnFrames
 //	@Accept			json
 //	@Produce		json
-//	@Param			Authorization	header		string				true	"Authentication header"
-//	@Param			width			form		int					true	"Ширина кадра"
-//	@Param			height			form		int					true	"Высота кадра"
-//	@Param			x				form		int					true	"Координата x"
-//	@Param			y				form		int					true	"Координата y"
-//	@Param			classId			form		int					true	"Идентификатор класса"
-//	@Param			videoId			form		int					true	"Идентификатор видео"
-//	@Param			frame			form		file				true	"Кадр для обучения"
-//	@Success		201				{object}	string				"Кадр для обучения успешно создан"
-//	@Failure		400				{object}	string				"Ошибка при создании кадра для обучения"
-//	@Failure		422				{object}	string				"Неверный формат данных"
+//	@Param			Authorization	header		string	true	"Authentication header"
+//	@Param			width			formData	int		true	"Ширина кадра"
+//	@Param			height			formData	int		true	"Высота кадра"
+//	@Param			x				formData	int		true	"Координата x"
+//	@Param			y				formData	int		true	"Координата y"
+//	@Param			classId			formData	int		true	"Идентификатор класса"
+//	@Param			videoId			formData	int		true	"Идентификатор видео"
+//	@Param			frame			formData	file	true	"Кадр для обучения"
+//	@Success		201				{object}	string	"Кадр для обучения успешно создан"
+//	@Failure		400				{object}	string	"Ошибка при создании кадра для обучения"
+//	@Failure		422				{object}	string	"Неверный формат данных"
 //	@Router			/api/v1/learnFrames [post]
 func (lc *learnFrameController) CreateOne(c *fiber.Ctx) error {
 	width, _ := strconv.Atoi(c.FormValue("width"))

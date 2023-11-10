@@ -265,6 +265,71 @@ paths:
       summary: Удаление группы
       tags:
       - groups
+  /api/v1/learnFrames:
+    post:
+      consumes:
+      - application/json
+      description: Создание кадра для обучения с указанными координатами, по которым
+        можно обучать модель
+      parameters:
+      - description: Authentication header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Ширина кадра
+        in: formData
+        name: width
+        required: true
+        type: integer
+      - description: Высота кадра
+        in: formData
+        name: height
+        required: true
+        type: integer
+      - description: Координата x
+        in: formData
+        name: x
+        required: true
+        type: integer
+      - description: Координата y
+        in: formData
+        name: "y"
+        required: true
+        type: integer
+      - description: Идентификатор класса
+        in: formData
+        name: classId
+        required: true
+        type: integer
+      - description: Идентификатор видео
+        in: formData
+        name: videoId
+        required: true
+        type: integer
+      - description: Кадр для обучения
+        in: formData
+        name: frame
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Кадр для обучения успешно создан
+          schema:
+            type: string
+        "400":
+          description: Ошибка при создании кадра для обучения
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Создание кадра для обучения
+      tags:
+      - learnFrames
   /api/v1/users:
     get:
       consumes:
