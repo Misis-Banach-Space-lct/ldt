@@ -9,5 +9,6 @@ RUN go mod download
 COPY . .
 
 RUN go build -o ./main ./main.go
+RUN chmod 777 ./main
 
 CMD [ "./main" ]
