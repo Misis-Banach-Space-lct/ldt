@@ -361,12 +361,12 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 	var paths []string
 	var frames []string
 	if framesType == "processed" {
-		paths = []string{fmt.Sprintf("static/processed/frames/%d", videoId)}
-	} else {
 		paths = []string{
-			fmt.Sprintf("static/frames/%d", videoId),
-			fmt.Sprintf("static/frames_h/%d", videoId),
+			fmt.Sprintf("static/processed/frames/%d", videoId),
+			fmt.Sprintf("static/processed/frames_h/%d", videoId),
 		}
+	} else {
+		paths = []string{fmt.Sprintf("static/frames/%d", videoId)}
 	}
 
 	for _, path := range paths {
