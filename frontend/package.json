@@ -1,0 +1,41 @@
+{
+  "name": "object_detection",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "serve": "serve -s dist -p 10000"
+  },
+  "dependencies": {
+    "@bmunozg/react-image-area": "^1.1.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.16",
+    "@mui/material": "^5.14.16",
+    "@mui/x-data-grid": "^6.18.0",
+    "@rajesh896/video-thumbnails-generator": "^2.3.9",
+    "axios": "^1.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-spinners": "^0.13.8",
+    "video.js": "^8.6.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "prettier": "3.0.3",
+    "react-router-dom": "^6.18.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
+  }
+}

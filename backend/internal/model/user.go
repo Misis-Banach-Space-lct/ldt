@@ -21,6 +21,7 @@ type User struct {
 	LastName  string    `json:"lastName"`
 	CreatedAt time.Time `json:"createdAt"` // default = current timestamp
 	UpdatedAt time.Time `json:"updatedAt"` // default = current timestamp
+	GroupIds  []int     `json:"groupIds"`
 }
 
 type UserLogin struct {
@@ -41,7 +42,7 @@ type UserCreate struct {
 
 type UserGroupUpdate struct {
 	Action  string `json:"action" validate:"required,oneof=add remove"`
-	UserId  int    `json:"userId" validate:"required,gt=1"`
+	UserId  int    `json:"userId" validate:"required,gte=1"`
 	GroupId int    `json:"groupId" validate:"gte=0"`
 }
 

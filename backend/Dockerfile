@@ -1,10 +1,9 @@
 FROM golang:1.21.0-bookworm
 WORKDIR /app
 
-RUN mkdir -p /app/static/videos
-RUN mkdir -p /app/static/frames
-RUN mkdir -p /app/static/processed/videos
-RUN mkdir -p /app/static/processed/frames
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get install -y ffmpeg
 
 COPY go.mod ./
 COPY go.sum ./
@@ -15,7 +14,6 @@ COPY cmd/ ./cmd/
 COPY docs ./docs/
 COPY internal/ ./internal/
 COPY .env .
-
 
 RUN go build -o ./main ./cmd/server/main.go
 

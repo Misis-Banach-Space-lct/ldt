@@ -33,23 +33,25 @@ services:
     depends_on:
       - db
       - redis
-      - worker
     ports:
-      - "9999:9999"
+      - "10001:10001"
     volumes:
-      - backend-static:/app/static
+      - ./static/videos:/app/static/videos
+      - ./static/frames:/app/static/frames
+      - ./static/processed/videos:/app/static/processed/videos
+      - ./static/processed/frames:/app/static/processed/frames
+      - ./static/processed/frames_h:/app/static/processed/frames_h
+      - ./static/learn_frames:/app/static/learn_frames
 
-  worker:
+  frontend:
     build:
-      context: ./ml-backend
+      context: ./frontend
       dockerfile: Dockerfile
-    # command: ['python3', '-m', 'celery', '-A', 'worker', 'worker', '-l', 'info']
-    volumes:
-      - backend-static:/app/static
-    depends_on:
-      - redis
+    restart: always
+    ports:
+      - "10000:10000"
 
 volumes:
-  backend-static:
+  static:
   redis_data:
     driver: local

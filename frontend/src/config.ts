@@ -1,0 +1,1 @@
+export const BASE_URL = 'http://larek.itatmisis.ru:10001';

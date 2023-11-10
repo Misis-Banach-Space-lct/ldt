@@ -38,6 +38,20 @@ func NewVideoController(vr model.VideoRepository, ur model.UserRepository, gr mo
 	}
 }
 
+func getDirFiles(framesPath string) ([]string, error) {
+	files, err := os.ReadDir(framesPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var frames []string
+	for _, file := range files {
+		frames = append(frames, framesPath+"/"+file.Name())
+	}
+
+	return frames, nil
+}
+
 // CreateOne godoc
 //
 //	@Summary		Создание видео
@@ -81,7 +95,8 @@ func (vc *videoController) CreateOne(c *fiber.Ctx) error {
 		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to save video file", err)
 	}
 
-	go service.ProcessVideo(c.Context(), videoId, videoData.Source, vc.videoRepo)
+	go service.ProcessVideoMl(c.Context(), videoId, videoData.Source, video.Filename, vc.videoRepo)
+	go service.ProcessVideoFrames(videoId, videoData.Source)
 
 	return c.Status(http.StatusCreated).JSON(videoData)
 }
@@ -164,7 +179,8 @@ func (vc *videoController) CreateMany(c *fiber.Ctx) error {
 
 	go func() {
 		for idx, videoId := range videoIds {
-			go service.ProcessVideo(c.Context(), videoId, videosData[idx].Source, vc.videoRepo)
+			go service.ProcessVideoMl(c.Context(), videoId, videosData[idx].Source, zipReader.File[idx].FileInfo().Name(), vc.videoRepo)
+			go service.ProcessVideoFrames(videoId, videosData[idx].Source)
 		}
 	}()
 
@@ -326,9 +342,10 @@ func (vc *videoController) UpdateGroup(c *fiber.Ctx) error {
 //	@Tags			videos
 //	@Accept			json
 //	@Produce		json
-//	@Param			id				path		int			true	"Id видео"
-//	@Success		200				{object}	[]string	"Список кадров видео"
-//	@Failure		404				{object}	string		"Кадры видео не найдены"
+//	@Param			id		path		int			true	"Id видео"
+//	@Param			type	query		string		false	"Тип кадров (processed - обработанные, иначе - исходные)"	enums(processed, default)
+//	@Success		200		{object}	[]string	"Список кадров видео"
+//	@Failure		404		{object}	string		"Кадры видео не найдены"
 //	@Router			/api/v1/videos/{id}/frames [get]
 func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 	videoId, err := c.ParamsInt("id")
@@ -336,19 +353,24 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 		return response.ErrValidationError("video id", err)
 	}
 
-	framesPath := fmt.Sprintf("static/frames/%d", videoId)
-	if _, err := os.Stat(framesPath); os.IsNotExist(err) {
-		return response.ErrCustomResponse(http.StatusNotFound, "frames not found", nil)
-	}
-
-	files, err := os.ReadDir(framesPath)
-	if err != nil {
-		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
-	}
-
+	framesType := c.Query("type")
+	var paths []string
 	var frames []string
-	for _, file := range files {
-		frames = append(frames, fmt.Sprintf("static/frames/%d/%s", videoId, file.Name()))
+	if framesType == "processed" {
+		paths = []string{
+			fmt.Sprintf("static/processed/frames/%d", videoId),
+			fmt.Sprintf("static/processed/frames_h/%d", videoId),
+		}
+	} else {
+		paths = []string{fmt.Sprintf("static/frames/%d", videoId)}
+	}
+
+	for _, path := range paths {
+		curFrames, err := getDirFiles(path)
+		if err != nil {
+			continue
+		}
+		frames = append(frames, curFrames...)
 	}
 
 	return c.Status(http.StatusOK).JSON(frames)

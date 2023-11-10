@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"fmt"
+	"lct/internal/logging"
 	"lct/internal/model"
+	"strconv"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -157,7 +159,26 @@ func (vr *videoPgRepository) FindMany(c context.Context, filter string, value an
 
 	sql := `select * from ` + model.VideosTableName + ` where `
 	if filter != "" {
-		sql += fmt.Sprintf("%s = '%v' and ", filter, value)
+		if filter == "groupId" {
+			id, err := strconv.Atoi(value.(string))
+			if err != nil {
+				return nil, err
+			}
+			flag := false
+			for _, groupId := range userGroupIds {
+				if groupId == id {
+					flag = true
+					break
+				}
+			}
+			if !flag {
+				logging.Log.Debugf("groupId %v is not permitted, available groups: %+v", value, userGroupIds)
+				return nil, nil
+			}
+			userGroupIds = []int{id}
+		} else {
+			sql += fmt.Sprintf("%s = '%v' and ", filter, value)
+		}
 	}
 	sql += `
 		id in (select videoId from ` + model.VideosTableName + "_" + model.GroupsTableName + ` where groupId = any($1))
@@ -254,11 +275,24 @@ func (vr *videoPgRepository) GetGroupIds(c context.Context, videoId int) ([]int,
 	return groupIds, nil
 }
 
-func (vr *videoPgRepository) SetProcessed(c context.Context, videoId int) error {
+func (vr *videoPgRepository) SetCompleted(c context.Context, videoId int, fileName string) error {
 	_, err := vr.db.Query(c, `
 		update `+model.VideosTableName+`
-		set status = 'processed'
+		set status = 'completed'
 		where id = $1
 	`, videoId)
+
+	var processedSource string
+	if videoId == 1 {
+		processedSource = fmt.Sprintf("static/processed/videos/predict/%s", fileName)
+	} else {
+		processedSource = fmt.Sprintf("static/processed/videos/predict%d/%s", videoId, fileName)
+	}
+
+	_, err = vr.db.Query(c, `
+		update `+model.VideosTableName+`
+		set processedSource = $1
+		where id = $2
+	`, processedSource, videoId)
 	return err
 }

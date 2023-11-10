@@ -6,9 +6,11 @@ import (
 	"lct/internal/config"
 	"lct/internal/database"
 	"lct/internal/logging"
+	"lct/internal/service"
 	"os"
 )
 
+// TODO: добавииь дообучение
 // TODO: add graceful shutdown
 //
 //	@title			ЛЦТ-2023 видео-детекция незаконной торговли API
@@ -42,6 +44,8 @@ func setup() error {
 	if err := database.NewPostgres(10); err != nil {
 		return err
 	}
+
+	service.NewRedis()
 
 	return nil
 }

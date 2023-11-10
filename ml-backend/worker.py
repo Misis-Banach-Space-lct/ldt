@@ -1,12 +1,12 @@
-import cv2
-import time
 import os
+import cv2
 from celery import Celery
+from ml import process
 
 app = Celery(
     "tasks",
-    broker="redis://redis:6379/0",
-    backend="redis://redis:6379/0",
+    broker="redis://localhost:6379/0",
+    backend="redis://localhost:6379/0",
 )
 
 app.conf.update(
@@ -15,22 +15,23 @@ app.conf.update(
     CELERY_RESULT_SERIALIZER="json",
     CELERY_ENABLE_UTC=True,
     CELERY_TASK_PROTOCOL=1,
+    WORKER_LOST_WAIT=60 * 5,
 )
 
 
 @app.task
-def process(a, b):
-    time.sleep(5)
-    return a + b
+def process_video(video_id: int, video_source: str):
+    print("starting process_video")
+    print(process(video_id, video_source))
+    return
 
 
 @app.task
 def get_frames(video_id: int, video_source: str):
     print(f"video_id: {video_id}")
-    time.sleep(10)
-    cap = cv2.VideoCapture(video_source)
+    cap = cv2.VideoCapture(f"../{video_source}")
     try:
-        os.mkdir(f"./static/frames/{video_id}")
+        os.mkdir(f"../static/frames/{video_id}")
     except Exception as e:
         print(str(e))
 
@@ -42,7 +43,7 @@ def get_frames(video_id: int, video_source: str):
         _, image = cap.read()
 
         if frame % (fps * 5) == 0:
-            cv2.imwrite(f"./static/frames/{video_id}/frame{count}.jpg", image)
+            cv2.imwrite(f"../static/frames/{video_id}/frame{count}.jpg", image)
             print(f"frame{count}")
             count += 1
 

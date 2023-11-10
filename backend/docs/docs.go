@@ -779,6 +779,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/videos/{id}/frames": {
+            "get": {
+                "description": "Получение кадров видео по id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "videos"
+                ],
+                "summary": "Получение кадров видео",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id видео",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "processed",
+                            "default"
+                        ],
+                        "type": "string",
+                        "description": "Тип кадров (processed - обработанные, иначе - исходные)",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список кадров видео",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Кадры видео не найдены",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Авторизоваться в системе с помощью заранее сгенерированных логина и пароля",
@@ -870,6 +921,12 @@ const docTemplate = `{
                 "firstName": {
                     "type": "string"
                 },
+                "groupIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "id": {
                     "description": "serial",
                     "type": "integer"
@@ -904,11 +961,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "type": "string",
-                    "enum": [
-                        "admin",
-                        "viewer"
-                    ]
+                    "type": "string"
                 }
             }
         },
@@ -931,7 +984,8 @@ const docTemplate = `{
                     "minimum": 0
                 },
                 "userId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -959,9 +1013,18 @@ const docTemplate = `{
                     "description": "default = current timestamp",
                     "type": "string"
                 },
+                "groupIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "id": {
                     "description": "serial",
                     "type": "integer"
+                },
+                "processedSource": {
+                    "type": "string"
                 },
                 "source": {
                     "type": "string"
