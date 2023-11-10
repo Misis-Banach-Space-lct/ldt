@@ -111,7 +111,7 @@ func (element *ConfigST) HasViewer(uuid string) bool {
 
 func loadConfig() *ConfigST {
 	var tmp ConfigST
-	data, err := ioutil.ReadFile("stream_config.json")
+	data, err := ioutil.ReadFile("./config/stream_config.json")
 	if err != nil {
 		log.Fatalln(err)
 	}
