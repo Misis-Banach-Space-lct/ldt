@@ -388,7 +388,7 @@ func serveHTTP() {
 	})
 	router.GET("/play/hls/:suuid/index.m3u8", PlayHLS)
 	router.GET("/play/hls/:suuid/segment/:seq/file.ts", PlayHLSTS)
-	router.StaticFS("/static", http.Dir("web/static"))
+	router.StaticFS("/static-stream", http.Dir("web/static-stream"))
 	err := router.Run(Config.Server.HTTPPort)
 	if err != nil {
 		log.Fatalln(err)
