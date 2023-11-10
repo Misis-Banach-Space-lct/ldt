@@ -99,7 +99,7 @@ def select_objects(
             criterion[2] = True
             # print(f'Объект {obj.id} был более, чем в половине видео')
         if False not in criterion:
-            obj.path = save_path + f"/{obj.detected_obj_id}" + ".jpg"
+            obj.path.append(save_path + f"/{obj.detected_obj_id}" + ".jpg")
             preds[obj.detected_obj_id] = obj
 
     return preds

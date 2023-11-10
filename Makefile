@@ -1,5 +1,5 @@
 worker:
-	cd ml-backend && pip install -r requirements.txt && python3 -m celery -A worker worker -l info --pool=eventlet -c 7
+	cd ml-backend && pip install -r requirements.txt && python3 -m celery -A worker worker -l info -c 7
 
 swag:
 	~/go/bin/swag init -g ./backend/cmd/server/main.go -o ./backend/docs
@@ -11,7 +11,7 @@ debug: swag
 
 local:
 	docker compose up --build -d
-	cd ml-backend && python3 -m venv venv && pip install -r requirements.txt && python3 -m celery -A worker worker -l info --pool=eventlet -c 7
+	cd ml-backend && python3 -m venv venv && pip install -r requirements.txt && python3 -m celery -A worker worker -l info -c 7
 
 local-with-logs:
 	docker compose up --build
