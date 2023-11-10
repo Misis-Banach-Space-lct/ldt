@@ -358,16 +358,23 @@ func (vc *videoController) GetFrames(c *fiber.Ctx) error {
 	}
 
 	framesType := c.Query("type")
-	var path string
+	var paths []string
+	var frames []string
 	if framesType == "processed" {
-		path = fmt.Sprintf("static/processed/frames/%d", videoId)
+		paths = []string{fmt.Sprintf("static/processed/frames/%d", videoId)}
 	} else {
-		path = fmt.Sprintf("static/frames/%d", videoId)
+		paths = []string{
+			fmt.Sprintf("static/frames/%d", videoId),
+			fmt.Sprintf("static/frames_h/%d", videoId),
+		}
 	}
 
-	frames, err := getDirFiles(path)
-	if err != nil {
-		return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
+	for _, path := range paths {
+		curFrames, err := getDirFiles(path)
+		if err != nil {
+			return response.ErrCustomResponse(http.StatusInternalServerError, "failed to read frames directory", err)
+		}
+		frames = append(frames, curFrames...)
 	}
 
 	return c.Status(http.StatusOK).JSON(frames)
