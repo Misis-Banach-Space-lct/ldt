@@ -51,6 +51,14 @@ services:
     ports:
       - "10000:10000"
 
+  stream:
+    build:
+      context: ./stream
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "10002:10002"
+
 volumes:
   static:
   redis_data:
