@@ -6,6 +6,5 @@ __pycache__
 venv
 video.mp4
 runs
-static
 .DS_Store
 stream_config.json
