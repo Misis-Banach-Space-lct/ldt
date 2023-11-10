@@ -41,6 +41,13 @@ services:
       - ./static/processed/videos:/app/static/processed/videos
       - ./static/processed/frames:/app/static/processed/frames
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "10000:10000"
 
 volumes:
   static:
