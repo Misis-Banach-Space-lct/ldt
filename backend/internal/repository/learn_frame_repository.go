@@ -37,7 +37,7 @@ func NewLearnFramePgRepository(db *pgxpool.Pool) (model.LearnFrameRepository, er
 func (lr *learnFramePgRepository) InsertOne(c context.Context, frameData model.LearnFrameCreate, userId int) error {
 	_, err := lr.db.Exec(c, `
 		insert into `+model.LearnFrameTableName+`(width, height, x, y, classId, videoId, userId)
-		values ($1, $2, $3, $4, $5, $6)
+		values ($1, $2, $3, $4, $5, $6, $7)
 	`, frameData.Width, frameData.Height, frameData.X, frameData.Y, frameData.ClassId, frameData.VideoId, userId)
 	return err
 }
