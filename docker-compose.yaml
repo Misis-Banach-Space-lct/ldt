@@ -40,6 +40,7 @@ services:
       - ./static/frames:/app/static/frames
       - ./static/processed/videos:/app/static/processed/videos
       - ./static/processed/frames:/app/static/processed/frames
+      - ./static/processed/frames_h:/app/static/processed/frames_h
 
   frontend:
     build:

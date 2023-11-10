@@ -39,10 +39,6 @@ func NewVideoController(vr model.VideoRepository, ur model.UserRepository, gr mo
 }
 
 func getDirFiles(framesPath string) ([]string, error) {
-	if _, err := os.Stat(framesPath); os.IsNotExist(err) {
-		return nil, err
-	}
-
 	files, err := os.ReadDir(framesPath)
 	if err != nil {
 		return nil, err
@@ -50,7 +46,7 @@ func getDirFiles(framesPath string) ([]string, error) {
 
 	var frames []string
 	for _, file := range files {
-		frames = append(frames, fmt.Sprintf("%s/%s", framesPath, file.Name()))
+		frames = append(frames, framesPath+"/"+file.Name())
 	}
 
 	return frames, nil
