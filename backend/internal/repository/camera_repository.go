@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"lct/internal/logging"
 	"lct/internal/model"
 	"strconv"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -15,7 +17,14 @@ type cameraPgRepository struct {
 }
 
 func NewCameraPgRepository(db *pgxpool.Pool) (model.CameraRepository, error) {
-	_, err := db.Exec(context.Background(), `
+	ctx := context.Background()
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `
 		create table if not exists `+model.CamerasTableName+`(
 			id serial primary key,
 			connUuid text not null unique,
@@ -25,6 +34,26 @@ func NewCameraPgRepository(db *pgxpool.Pool) (model.CameraRepository, error) {
 		)
 	`)
 	if err != nil {
+		return nil, err
+	}
+
+	var cameraId int
+	err = tx.QueryRow(ctx, `
+		select id from `+model.CamerasTableName+` where id = 1
+	`).Scan(&cameraId)
+	if errors.Is(err, pgx.ErrNoRows) {
+		_, err = tx.Exec(ctx, `
+			insert into `+model.CamerasTableName+`(connUuid, url)
+			values('27aec28e-6181-4753-9acd-0456a75f0289', 'rtsp://admin:A1234567@188.170.176.190:8028/Streaming/Channels/101?transportmode=unicast&profile=Profile_1')
+		`)
+
+		_, err = tx.Exec(ctx, `
+			insert into `+model.CamerasTableName+`_`+model.GroupsTableName+`
+			values(1, 0)
+		`)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 
