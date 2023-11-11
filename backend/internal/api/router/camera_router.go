@@ -12,17 +12,17 @@ import (
 )
 
 func (r *Router) setupCameraRoutes(group fiber.Router) error {
-	cameraRepository, err := repository.NewCameraPgRepository(database.PgConn.GetPool())
-	if err != nil {
-		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("cameras router: %+v", err)}
-	}
 	userRepository, err := repository.NewUserPgRepository(database.PgConn.GetPool())
 	if err != nil {
-		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("cameras router: %+v", err)}
+		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("cameras router, userRepo: %+v", err)}
 	}
 	groupRepository, err := repository.NewGroupPgRepository(database.PgConn.GetPool())
 	if err != nil {
-		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("cameras router: %+v", err)}
+		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("cameras router, groupRepo: %+v", err)}
+	}
+	cameraRepository, err := repository.NewCameraPgRepository(database.PgConn.GetPool())
+	if err != nil {
+		return model.ErrRouterSetupFailed{Message: fmt.Sprintf("cameras router, camreRepo: %+v", err)}
 	}
 	cameraController := controller.NewCameraController(cameraRepository, userRepository, groupRepository)
 
