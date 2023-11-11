@@ -15,7 +15,7 @@ class DetectedDbscan:
         self.coordinates_x = []
         self.coordinates_y = []
         self.image = None
-        self.path = ""
+        self.path = []
 
         self.timestamp: float = 0
         self.timestampML: float = 0
@@ -79,7 +79,7 @@ def otbor(objects: dict, save_path: str) -> list:
         labels = db.labels_
         if len(set(labels)) >= 3:
             # print(obj.id)
-            obj.path = save_path + f"/{str(obj.id)}" + ".jpg"
+            obj.path.append(save_path + f"/{str(obj.id)}" + ".jpg")
             cadrs.append(obj)
             image = obj.image.copy()
             cv2.rectangle(

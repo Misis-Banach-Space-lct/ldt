@@ -99,7 +99,7 @@ def select_objects(
             criterion[2] = True
             # print(f'Объект {obj.id} был более, чем в половине видео')
         if False not in criterion:
-            obj.path = save_path + f"/{obj.detected_obj_id}" + ".jpg"
+            obj.path.append(save_path + f"/{obj.detected_obj_id}" + ".jpg")
             preds[obj.detected_obj_id] = obj
 
     return preds
@@ -116,7 +116,7 @@ def show(preds: dict, result_after_tracking: list):
             2,
         )
         # cv2.putText(image, 'StacionarnyTorgovec', (int(obj.first_x1), int(obj.first_y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255 , 12), 2)
-        cv2.imwrite(obj.path, image)
+        cv2.imwrite(obj.path[0], image)
 
 
 def post_processing(
