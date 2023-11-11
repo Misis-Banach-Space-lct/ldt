@@ -1,5 +1,4 @@
 import VideoCard from "./VideoCard";
-import SelectGroup from './SelectGroup'
 import { Box, Typography, Button } from "@mui/material";
 import ApiVideo from "../services/apiVideo";
 import { useEffect, useState } from "react";
@@ -22,17 +21,17 @@ interface AllVideos {
 function DisplayedVideos({ limit, offset, isAll, isVideoSent }: { limit: number, offset: number, isAll: boolean, isVideoSent: boolean }) {
     const [fetchVideos, setFetchedVideos] = useState<AllVideos[]>();
     const [count, setCount] = useState(0)
-    const [selectedGroupId, setSelectedGroupId] = useState<number>(0);
 
 
     const fetchVideosFunc = async () => {
         let result = await ApiVideo.getAllVideos({
             limit: limit,
             offset: offset,
-            // groupId: selectedGroupId,
         });
         setFetchedVideos(result.data);
     };
+
+
 
     useEffect(() => {
         fetchVideosFunc();
@@ -43,45 +42,34 @@ function DisplayedVideos({ limit, offset, isAll, isVideoSent }: { limit: number,
         return () => clearInterval(interval);
     }, []);
 
+
+    // useEffect(() => {
+    //     if(isFilter) fetchVideosFilter();
+    // }, [isFilter]);
+
+
     useEffect(() => {
-        if(isVideoSent) fetchVideosFunc();
+        if (isVideoSent) fetchVideosFunc();
     }, [isVideoSent]);
-
-    // function handleFilter() {
-        //реакция на клик
-
-        // const fetchVideosFilter = async () => {
-        //     let result = await ApiVideo.getAllVideosFilter({
-        //         limit: limit,
-        //         offset: offset,
-        //         groupId: selectedGroupId,
-        //     });
-        //     setFetchedVideos(result.data);
-        // };
-        // fetchVideosFilter();
-    // }
-
-    const updateGroupId = (newGroupId: number) => {
-        setSelectedGroupId(newGroupId);
-        console.log(selectedGroupId)
-    };
 
 
     return (
         <>
             <Box>
-                <Box sx={{display: 'flex'}}>
+                {/* <Box sx={{ display: 'flex' }}>
                     <SelectGroup updateGroupId={updateGroupId} />
-                    <div style={{
+                    <Button onClick={() => {setIsFilter(true)}} 
+                    style={{
                         color: '#0B0959',
                         border: '3px dashed #0B0959',
                         padding: '10px',
                         width: '227px',
-                        marginLeft: '20px'
+                        marginLeft: '20px', 
+                        height: '40px',
+                        marginTop: '2px'
                     }}>
-                        Фильтрация по группе
-                    </div>
-                </Box>
+                        Отфильтровать</Button>
+                </Box> */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography
                         sx={{

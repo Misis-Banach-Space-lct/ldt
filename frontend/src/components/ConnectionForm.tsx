@@ -2,20 +2,43 @@ import { Paper, TextField, Typography, Box, Button, InputAdornment, InputBase, I
 import DownloadIcon from '@mui/icons-material/Download';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dotIcon from '../assets/dot_icon.svg'
-import SelectGroup from './MultiSelectGroup'
+import SelectGroup from './SelectGroup'
 import CloseIcon from '@mui/icons-material/Close';
+import ApiStream from '../services/apiStream'
 
 
-function ConnectionForm() {
+function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSent: boolean) => void}) {
     const [linkArr, setLinkArr] = useState<string[]>([]);
     const [error3, setError3] = useState(false);
     const [helperText3, setHelperText3] = useState('');
     const [disableButton, setdisableButton] = useState(false)
     const [disableUploadButton, setDisableUploadButton] = useState(false);
 
+    const [isVideoSent, setIsVideoSent] = useState<boolean>(false);
+
+    useEffect((() => {
+        updateIsVideoSent(isVideoSent)
+    })
+    , [isVideoSent])
+
+
+    const [groupId, setGroupId] = useState<number>(0);
+    const updateGroupId = (newGroupId: number) => {
+        setGroupId(newGroupId);
+    };
+    const [titleValue, setTitleValue] = useState<string>('');
+    const [titleError, setTitleError] = useState<boolean>(false);
+    const [titleHelperText, setTitleHelperText] = useState<string>('');
+
+    function handleTitelChange(event: any) {
+        setIsVideoSent(false);
+        setTitleValue(event.target.value)
+    }
+
     const handleMultipleLinksChange = (event: any) => {
+        setIsVideoSent(false);
         const inputText = event.target.value;
         const lines = inputText.split('\n')
         let linkSet = new Set<string>();
@@ -51,12 +74,65 @@ function ConnectionForm() {
         console.log(linkArr, uploadedFiles)
     }
 
+
+    const handleSendVideo = (event: any) => {
+        setIsVideoSent(false);
+        let errorEmpty = false;
+        event.preventDefault();
+        console.log(groupId);
+        console.log(titleHelperText)
+
+        if (!titleValue) {
+            setTitleError(true);
+            setTitleHelperText('Введите название подключения')
+            errorEmpty = true;
+        }
+        else {
+            setTitleError(false);
+            setTitleHelperText('')
+            errorEmpty = false;
+        }
+
+        if (!errorEmpty && linkArr) {
+            let Urls = [];
+            if (selectedFile) Urls = uploadedFiles;
+            else Urls = linkArr;  
+            let streamTitle = ''          
+            for (let i = 0; i < Urls.length; i++) {
+                if(Urls.length === 1){
+                    streamTitle = titleValue;
+                }
+                else{
+                    streamTitle = `${titleValue}_${i}`
+                }
+                ApiStream.createStream({
+                    name: streamTitle,
+                    channels: {
+                        '0': {
+                            url: Urls[i],
+                            on_demand: true,
+                            debug: false,
+                        }
+                    }
+                });
+            }
+            setSelectedFile(null);
+            setIsVideoSent(true);
+            setErrorText('');
+        }
+    };
+
+
+
+
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [errorText, setErrorText] = useState('');
     const [textFieldDisabled, setTextFieldDisabled] = useState(false);
 
     function parseCSV(csvData: string): { columns: number, urls: string[] } {
+        setIsVideoSent(false);
         const lines = csvData.split('\n');
         const urls: string[] = [];
         let columns = 0;
@@ -79,6 +155,7 @@ function ConnectionForm() {
     }
 
     const handleFileInputChange = (e: any) => {
+        setIsVideoSent(false);
         const file = e.target.files[0];
         if (!file) {
             setSelectedFile(null);
@@ -177,13 +254,16 @@ function ConnectionForm() {
                     >
                         <img width="15px" height="15px" src={dotIcon} alt="logo" style={{ margin: '0 5px' }} />
                         <InputBase
+                            error={titleError}
+                            value={titleValue}
+                            onChange={handleTitelChange}
                             sx={{ ml: 1, flex: 1 }}
                             placeholder="Введите название"
-                            inputProps={{ 'aria-label': 'search google maps' }}
+                            inputProps={{ 'aria-label': 'stream title field' }}
                         />
                     </Paper>
-                    <SelectGroup />
-                    <Button disabled={disableButton}
+                    <SelectGroup updateGroupId={updateGroupId} />
+                    <Button onClick={handleSendVideo} disabled={disableButton}
                         style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: '#CEE9DD', borderRadius: '8px', textTransform: 'capitalize', marginRight: 20, width: '250px', height: '40px' }}
                     >
                         Создать подключение

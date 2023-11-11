@@ -72,6 +72,12 @@ function Users() {
         setGroupId(newGroupId);
     };
 
+    const [groupDeleteId, setGroupDeleteId] = useState<number | undefined>(undefined);
+    const updateGroupDeleteId = (newGroupId: number) => {
+        setGroupDeleteId(newGroupId);
+        updateField('groupDelete', { status: false });
+    };
+
     const [role, setRole] = useState<"viewer" | "admin">('admin');
     const updateRole = (newRole: "viewer" | "admin") => {
         setRole(newRole);
@@ -79,6 +85,12 @@ function Users() {
 
     const [fields, setFields] = useState<FieldsState>({
         group: {
+            value: "",
+            error: false,
+            helperText: '',
+            status: false
+        },
+        groupDelete: {
             value: "",
             error: false,
             helperText: '',
@@ -149,6 +161,28 @@ function Users() {
         }
     };
 
+    const handleDeleteGroup = (event: any) => {
+        let errorEmpty = false;
+        event.preventDefault();
+
+        if (!groupDeleteId) {
+            updateField('groupDelete', { helperText: 'Выберите группу (нельзя удалить общую)', error: true });
+            errorEmpty = true;
+        }
+        else {
+            updateField('groupDelete', { helperText: '', error: false });
+            errorEmpty = false;
+        }
+
+        if (!errorEmpty && groupDeleteId !== undefined) {
+            let result = ApiGroup.deleteGroup(groupDeleteId);
+
+            result.then(_ => {
+                updateField('groupDelete', { status: true });
+            });
+        }
+    };
+
     const handleSurnameChange = (event: any) => {
         if (/^[А-Я][а-я]*$/.test(event.target.value)) {
             updateField('surname', { helperText: '', error: false });
@@ -156,6 +190,7 @@ function Users() {
             updateField('surname', { helperText: 'Введите с заглавной буквы на русском языке', error: true });
         }
         updateField('surname', { value: event.target.value });
+        updateField('surname', { status: false });
     };
 
     const handleNameChange = (event: any) => {
@@ -165,6 +200,7 @@ function Users() {
             updateField('name', { helperText: 'Введите с заглавной буквы на русском языке', error: true });
         }
         updateField('name', { value: event.target.value });
+        updateField('surname', { status: false });
     };
 
 
@@ -179,6 +215,7 @@ function Users() {
             updateField('email', { helperText: 'Неверный формат ввода email', error: true });
         }
         updateField('email', { value: event.target.value });
+        updateField('surname', { status: false });
     };
 
     const handleCreateUser = (event: any) => {
@@ -215,13 +252,6 @@ function Users() {
 
 
         if (!errorEmpty) {
-            console.log({
-                email: fields['email'].value,
-                firstName: fields['name'].value,
-                lastName: fields['surname'].value,
-                groupId: groupId,
-                role: role,
-            })
             let result = ApiUser.createUser({
                 email: fields['email'].value,
                 firstName: fields['name'].value,
@@ -271,62 +301,100 @@ function Users() {
                                     >
                                         Пользователи:
                                     </Typography>
-                                    {/* <UsersTable data={combinedData} /> */}
-                                    <ListTable data={fetchedUsers || []}/>
+                                    <ListTable data={fetchedUsers || []} />
                                 </Paper>
                             </Box>
                             <Box sx={{ mt: 3, mb: 3, display: 'flex', justifyContent: 'space-around' }}>
-                                <Paper sx={{ marginTop: 3, borderRadius: '15px', display: 'flex', justifyContent: 'space-between', flexDirection: 'column', height: '200px', p: 2 }}>
-                                    <Typography
-                                        sx={{
-                                            fontFamily: 'Nunito Sans',
-                                            fontWeight: 700,
-                                            fontSize: '15px',
-                                            color: '#0B0959',
-                                            textDecoration: 'none',
-                                            marginRight: 0,
-                                            paddingRight: 2,
-                                        }}
-                                    >
-                                        Создать новую группу:
-                                    </Typography>
-                                    <Box>
-                                        <InputBase
+                                <Box sx={{ display: 'flex', justifyContent: 'space-around', flexDirection: 'column' }}>
+                                    <Paper sx={{ marginTop: 3, borderRadius: '15px', display: 'flex', justifyContent: 'space-between', flexDirection: 'column', height: '200px', p: 2 }}>
+                                        <Typography
                                             sx={{
-                                                ml: 1,
-                                                flex: 1,
-                                                color: fields['group'].error ? 'error.main' : fields['group'].status ? 'success.main' : 'inherit',
+                                                fontFamily: 'Nunito Sans',
+                                                fontWeight: 700,
+                                                fontSize: '15px',
+                                                color: '#0B0959',
+                                                textDecoration: 'none',
+                                                marginRight: 0,
+                                                paddingRight: 2,
                                             }}
-                                            error={fields['group'].error}
-                                            value={fields['group'].value}
-                                            onChange={handleGroupChange}
-                                            placeholder="Введите название"
-                                            inputProps={{ 'aria-label': 'group name' }}
-                                        />
-                                        {fields['group'].error &&
-                                            <>
-                                                <Divider sx={{ borderColor: 'error.main' }} />
-                                                <FormHelperText sx={{ color: 'error.main' }}>{fields['group'].helperText}</FormHelperText>
-                                            </>
-                                        }
-                                        {fields['group'].status &&
-                                            <>
-                                                <Divider sx={{ borderColor: 'success.main' }} />
-                                                <FormHelperText sx={{ color: 'success.main' }}>Группа успешно создана</FormHelperText>
-                                            </>
-                                        }
-                                    </Box>
+                                        >
+                                            Создать новую группу:
+                                        </Typography>
+                                        <Box>
+                                            <InputBase
+                                                sx={{
+                                                    ml: 1,
+                                                    flex: 1,
+                                                    color: fields['group'].error ? 'error.main' : fields['group'].status ? 'success.main' : 'inherit',
+                                                }}
+                                                error={fields['group'].error}
+                                                value={fields['group'].value}
+                                                onChange={handleGroupChange}
+                                                placeholder="Введите название"
+                                                inputProps={{ 'aria-label': 'group name' }}
+                                            />
+                                            {fields['group'].error &&
+                                                <>
+                                                    <Divider sx={{ borderColor: 'error.main' }} />
+                                                    <FormHelperText sx={{ color: 'error.main' }}>{fields['group'].helperText}</FormHelperText>
+                                                </>
+                                            }
+                                            {fields['group'].status &&
+                                                <>
+                                                    <Divider sx={{ borderColor: 'success.main' }} />
+                                                    <FormHelperText sx={{ color: 'success.main' }}>Группа успешно создана</FormHelperText>
+                                                </>
+                                            }
+                                        </Box>
 
-                                    <Button
-                                        onClick={handleSubmitGroup}
-                                        style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: '#CEE9DD', borderRadius: '8px', textTransform: 'capitalize', marginRight: 20, width: '250px', height: '40px' }}
-                                    >
-                                        Создать
-                                    </Button>
-                                </Paper>
+                                        <Button
+                                            onClick={handleSubmitGroup}
+                                            style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: '#CEE9DD', borderRadius: '8px', textTransform: 'capitalize', marginRight: 20, width: '250px', height: '40px' }}
+                                        >
+                                            Создать
+                                        </Button>
+                                    </Paper>
+                                    <Paper sx={{ marginTop: 3, borderRadius: '15px', display: 'flex', justifyContent: 'space-between', flexDirection: 'column', height: '200px', p: 2 }}>
+                                        <Typography
+                                            sx={{
+                                                fontFamily: 'Nunito Sans',
+                                                fontWeight: 700,
+                                                fontSize: '15px',
+                                                color: '#0B0959',
+                                                textDecoration: 'none',
+                                                marginRight: 0,
+                                                paddingRight: 2,
+                                            }}
+                                        >
+                                            Удалить группу:
+                                        </Typography>
+                                        <Box>
+                                            <SelectGroup updateGroupId={updateGroupDeleteId} />
+                                            {fields['groupDelete'].error &&
+                                                <>
+                                                    <Divider sx={{ borderColor: 'error.main' }} />
+                                                    <FormHelperText sx={{ color: 'error.main' }}>{fields['groupDelete'].helperText}</FormHelperText>
+                                                </>
+                                            }
+                                            {fields['groupDelete'].status &&
+                                                <>
+                                                    <Divider sx={{ borderColor: 'success.main' }} />
+                                                    <FormHelperText sx={{ color: 'success.main' }}>Группа успешно удалена</FormHelperText>
+                                                </>
+                                            }
+                                        </Box>
+
+                                        <Button
+                                            onClick={handleDeleteGroup}
+                                            style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: '#E9CECE', borderRadius: '8px', textTransform: 'capitalize', marginRight: 20, width: '250px', height: '40px' }}
+                                        >
+                                            Удалить
+                                        </Button>
+                                    </Paper>
+                                </Box>
                                 <Paper sx={{
                                     marginTop: 3, borderRadius: '15px', display: 'flex', justifyContent: 'space-between', flexDirection: 'column',
-                                    height: '300px', width: '300px', p: 2, mb: 3
+                                    height: '450px', width: '400px', p: 2, mb: 3
                                 }}>
                                     <Typography
                                         sx={{
@@ -344,6 +412,8 @@ function Users() {
                                     <Box>
                                         <InputBase
                                             sx={{
+                                                height: '40px',
+                                                marginTop: '10px',
                                                 ml: 1,
                                                 flex: 1,
                                                 color: fields['surname'].error ? 'error.main' : fields['surname'].status ? 'success.main' : 'inherit',
@@ -364,6 +434,8 @@ function Users() {
                                     <Box>
                                         <InputBase
                                             sx={{
+                                                height: '40px',
+                                                marginTop: '10px',
                                                 ml: 1,
                                                 flex: 1,
                                                 color: fields['name'].error ? 'error.main' : fields['name'].status ? 'success.main' : 'inherit',
@@ -384,6 +456,8 @@ function Users() {
                                     <Box>
                                         <InputBase
                                             sx={{
+                                                height: '40px',
+                                                marginTop: '10px',
                                                 ml: 1,
                                                 flex: 1,
                                                 color: fields['email'].error ? 'error.main' : fields['email'].status ? 'success.main' : 'inherit',
@@ -402,8 +476,12 @@ function Users() {
                                         }
                                     </Box>
 
-                                    <SelectGroup updateGroupId={updateGroupId} />
-                                    <SelectRole updateRole={updateRole} />
+                                    <Box sx={{ marginTop: '10px' }}>
+                                        <SelectGroup updateGroupId={updateGroupId} />
+                                    </Box>
+                                    <Box sx={{ marginTop: '10px', marginBotton: '10px' }}>
+                                        <SelectRole updateRole={updateRole} />
+                                    </Box>
                                     {fields['surname'].status &&
                                         <>
                                             <Divider sx={{ borderColor: 'success.main' }} />

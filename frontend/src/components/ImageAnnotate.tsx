@@ -3,14 +3,14 @@ import { useState, useEffect, useReducer } from 'react';
 import { Button, Select, MenuItem, Box, Typography, Paper, Divider } from '@mui/material';
 
 
-
 interface ImageAnnotateProps {
   imageUrl: string;
   updateLabelingData: (newLabelingData: LabelingData[]) => void;
+  videoId: string;
 }
 
 interface AnnotatedArea extends IArea {
-  classIndex: number;
+  classId: number;
 }
 
 interface LabelingData {
@@ -43,7 +43,7 @@ function ImageAnnotate({ imageUrl, updateLabelingData }: ImageAnnotateProps) {
 
   const applyClassToArea = () => {
     if (tempArea) {
-      const newAreas = [...areas, { ...tempArea, classIndex: selectedClass }];
+      const newAreas = [...areas, { ...tempArea, classId: selectedClass }];
       setAreas(newAreas);
       setTempArea(null);
     }
@@ -66,7 +66,7 @@ function ImageAnnotate({ imageUrl, updateLabelingData }: ImageAnnotateProps) {
   const classDict: { [index: number]: string } = {
     0: 'Воздушные шарики/игрушки',
     1: 'Торговая тележка/палатка',
-    2: 'Человек',
+    2: 'Продавец',
     3: 'Иной объект'
   }
 
@@ -132,7 +132,7 @@ function ImageAnnotate({ imageUrl, updateLabelingData }: ImageAnnotateProps) {
                       }}
                     >
                       {/* {index + 1}. {JSON.stringify(area)} */}
-                      {index + 1}. Класс {classDict[area.classIndex - 1]}
+                      {index + 1}. Класс {classDict[area.classId - 1]}
                     </Typography>
                   </>
                 ))}

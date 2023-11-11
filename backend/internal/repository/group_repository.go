@@ -34,7 +34,6 @@ func NewGroupPgRepository(db *pgxpool.Pool) (model.GroupRepository, error) {
 		return nil, err
 	}
 
-	// TODO: make separate db loader
 	var groupId int
 	err = tx.QueryRow(ctx, `
 		select id from `+model.GroupsTableName+` where id = 0;

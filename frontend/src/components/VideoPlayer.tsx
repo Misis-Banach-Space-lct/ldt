@@ -1,5 +1,6 @@
 import { Box, DialogContent, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import ApiGroup from '../services/apiGroup';
 import ApiVideo from '../services/apiVideo';
@@ -33,7 +34,7 @@ interface allGroups {
 
 function VideoPlayer(props: Props) {
     const { videoMlLink, videoMlRef, videoTitle = "Текущее видео", groupIds = [], videoId = 0, onGroupChange } = props;
-
+    const navigate = useNavigate();
 
     const [fetchedGroups, setFetchedGroups] = useState<allGroups[]>();
     useEffect(() => {
@@ -51,6 +52,7 @@ function VideoPlayer(props: Props) {
     const [deleteGroupId, setDeleteGroupId] = useState<number>();
     const [openDialog, setOpenDialog] = useState(false);
     const [openDialogNewGroup, setOpenDialogNewGroup] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [isGroupAdded, setIsGroupAdded] = useState(false);
     const [isGroupRemoved, setIsGroupRemoved] = useState(false);
 
@@ -68,7 +70,7 @@ function VideoPlayer(props: Props) {
     }, [isGroupAdded, isGroupRemoved]);
 
     function handleDeleteGroup() {
-        if (deleteGroupId && deleteGroupId !== 0) {
+        if (deleteGroupId !== undefined) {
             let result = ApiVideo.updateVideoGroup({
                 action: 'remove',
                 videoId: videoId,
@@ -93,7 +95,7 @@ function VideoPlayer(props: Props) {
         setIsGroupAdded(false);
     }
     function handleAddGroup() {
-        if (groupId && groupId !== 0) {
+        if (groupId !== undefined) {
             let result = ApiVideo.updateVideoGroup({
                 action: 'add',
                 videoId: videoId,
@@ -112,6 +114,16 @@ function VideoPlayer(props: Props) {
     const updateGroupId = (newGroupId: number) => {
         setGroupId(newGroupId);
     };
+
+    const handleDeleteVideo = (event: any) => {
+        event.preventDefault();
+
+        let result = ApiVideo.deleteVideo(videoId);
+
+        result.then(_ => {
+            navigate('/home');
+        });
+    };
     return (
         <>
             {videoMlLink &&
@@ -119,7 +131,6 @@ function VideoPlayer(props: Props) {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                         <Box className="video">
                             <video controls style={{ maxWidth: '700px', maxHeight: '400px' }} ref={videoMlRef} src={videoMlLink}></video>
-                            {/* <embed style={{ maxWidth: '700px', maxHeight: '400px' }} type="video/.mp4" src={videoMlLink} ref={videoMlRef}/> */}
                         </Box>
                         <Paper sx={{ width: '250px', p: 2 }} elevation={20}>
                             <Box>
@@ -168,7 +179,6 @@ function VideoPlayer(props: Props) {
                                                     <Divider />
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'no-wrap', minHeight: '40px' }}>
                                                         <Typography
-                                                            variant="h1"
                                                             sx={{
                                                                 fontFamily: 'Nunito Sans',
                                                                 fontWeight: 700,
@@ -176,7 +186,7 @@ function VideoPlayer(props: Props) {
                                                                 color: '#0B0959',
                                                                 textDecoration: 'none',
                                                                 marginRight: 0,
-                                                                paddingRight: 2,
+                                                                padding: 0.5,
                                                             }}
                                                         >
                                                             {id}. {fetchedGroups?.find(group => group.id === id)?.title}
@@ -185,7 +195,7 @@ function VideoPlayer(props: Props) {
                                                         <IconButton key={id} onClick={() => {
                                                             setDeleteGroupId(id);
                                                             handleOpen();
-                                                        }}>
+                                                        }} sx={{ color: '#0B0959' }}>
                                                             <CloseIcon />
                                                         </IconButton>
                                                     </Box>
@@ -200,15 +210,62 @@ function VideoPlayer(props: Props) {
                                 </AccordionDetails>
                             </Accordion>
 
+                            <Button
+                                onClick={() => {setOpenDeleteDialog(true)}}
+                                style={{ marginTop: 40, color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: '#E9CECE', borderRadius: '8px', textTransform: 'capitalize', marginRight: 20, width: '250px', height: '40px' }}
+                            >
+                                Удалить видео
+                            </Button>
+
+                            <Dialog
+                                open={openDeleteDialog}
+                                onClose={() => {setOpenDeleteDialog(false)}}>
+                                <DialogTitle>
+                                    <Typography
+                                        sx={{
+                                            fontFamily: 'Nunito Sans',
+                                            fontWeight: 700,
+                                            fontSize: '15px',
+                                            color: '#0B0959',
+                                            textDecoration: 'none',
+                                            marginRight: 0,
+                                            paddingRight: 2,
+                                        }}
+                                    >
+                                        {`Вы точно хотите удалить видео?`}
+                                    </Typography>
+                                </DialogTitle>
+                                <DialogActions>
+                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                        onClick={() => {setOpenDeleteDialog(false)}}>Выйти</Button>
+                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                        onClick={handleDeleteVideo}>Удалить</Button>
+                                </DialogActions>
+                            </Dialog>
+
                             <Dialog
                                 open={openDialog}
                                 onClose={handleClose}>
                                 <DialogTitle>
-                                    {`Вы точно хотите удалить видео из группы?`}
+                                    <Typography
+                                        sx={{
+                                            fontFamily: 'Nunito Sans',
+                                            fontWeight: 700,
+                                            fontSize: '15px',
+                                            color: '#0B0959',
+                                            textDecoration: 'none',
+                                            marginRight: 0,
+                                            paddingRight: 2,
+                                        }}
+                                    >
+                                        {`Вы точно хотите удалить видео из группы?`}
+                                    </Typography>
                                 </DialogTitle>
                                 <DialogActions>
-                                    <Button onClick={handleClose}>Выйти</Button>
-                                    <Button onClick={handleDeleteGroup}>Удалить</Button>
+                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                        onClick={handleClose}>Выйти</Button>
+                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                        onClick={handleDeleteGroup}>Удалить</Button>
                                 </DialogActions>
                             </Dialog>
 
@@ -234,8 +291,10 @@ function VideoPlayer(props: Props) {
                                     <SelectGroupList updateGroupId={updateGroupId} groupIds={groupIds} />
                                 </DialogContent>
                                 <DialogActions>
-                                    <Button onClick={handleCloseNewGroup}>Закрыть</Button>
-                                    <Button onClick={handleAddGroup}>Добавить</Button>
+                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                        onClick={handleCloseNewGroup}>Закрыть</Button>
+                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                        onClick={handleAddGroup}>Добавить</Button>
                                 </DialogActions>
                             </Dialog>
                         </Paper>

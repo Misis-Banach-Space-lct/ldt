@@ -91,7 +91,7 @@ function NewConnection(  {updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSe
                 </AccordionSummary>
                 <AccordionDetails sx={{ height: '450px' }}>
                     <CustomTabPanel value={value} index={0}>
-                        <ConnectionForm />
+                        <ConnectionForm updateIsVideoSent={updateIsVideoSent}/>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
                         <VideoForm updateIsVideoSent={updateIsVideoSent}/>

@@ -47,7 +47,7 @@ const ApiVideo = {
                 Authorization: `Bearer ${storage.getToken()}`
             }
         }
-        return await axios.get(`${BASE_URL}/api/v1/videos?filter=${data.groupId}&offset=${data.offset}&limit=${data.limit}`, config);
+        return await axios.get(`${BASE_URL}/api/v1/videos?filter=groupId&value=${data.groupId}&offset=${data.offset}&limit=${data.limit}`, config);
     },
     async getVideoData(videoId: string) {
         let config = {
@@ -64,6 +64,14 @@ const ApiVideo = {
             }
         }
         return await axios.get(`${BASE_URL}/api/v1/videos/${data.videoId}/frames/?type=${data.type}`, config);
+    },
+    async getVideoMlFrames(videoId: string) {
+        let config = {
+            headers: {
+                Authorization: `Bearer ${storage.getToken()}`
+            }
+        }
+        return await axios.get(`${BASE_URL}/api/v1/frames/ml/${videoId}`, config);
     },
     async getVideoFile(source: string) {
         let config = {
@@ -110,6 +118,14 @@ const ApiVideo = {
         }
 
         return await axios.post(`${BASE_URL}/api/v1/videos/updateGroup`, data,config);
-    }
+    },
+    async deleteVideo(videoId: number) {
+        let config = {
+            headers: {
+                Authorization: `Bearer ${storage.getToken()}`
+            }
+        }
+        return await axios.delete(`${BASE_URL}/api/v1/videos/${videoId}`, config);
+    },
 };
 export default ApiVideo;

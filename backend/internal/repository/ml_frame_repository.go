@@ -21,6 +21,8 @@ func NewMlFramePgRepository(db *pgxpool.Pool) (model.MlFrameRepository, error) {
 			timeCode float,
 			timeCodeMl float,
 			detectedClassId int,
+			createdAt timestamp default current_timestamp,
+			updatedAt timestamp default current_timestamp,
 			foreign key (videoId) references `+model.VideosTableName+`(id)
 		);
 	`)
@@ -41,7 +43,10 @@ func (mr *mlFramePgRepository) InsertMany(c context.Context, framesData []model.
 	defer tx.Rollback(c)
 
 	for _, frame := range framesData {
-		paths := []string{frame.FileName[0], frame.FileName[len(frame.FileName)-1], frame.FileName[len(frame.FileName)/2]}
+		paths := []string{frame.FileName[0]}
+		if len(frame.FileName) != 1 {
+			paths = []string{frame.FileName[0], frame.FileName[len(frame.FileName)-1], frame.FileName[len(frame.FileName)/2]}
+		}
 		pathsJoined := strings.Join(paths, ";")
 
 		_, err := tx.Exec(c, `
@@ -72,7 +77,7 @@ func (mr *mlFramePgRepository) FindMany(c context.Context, videoId int) ([]model
 
 	for rows.Next() {
 		var frame model.MlFrame
-		if err := rows.Scan(&frame.Id, &frame.VideoId, &frame.FileName, &frame.TimeCode, &frame.TimeCodeMl, &frame.DetectedClassId); err != nil {
+		if err := rows.Scan(&frame.Id, &frame.VideoId, &frame.FileName, &frame.TimeCode, &frame.TimeCodeMl, &frame.DetectedClassId, &frame.CreatedAt, &frame.UpdatedAt); err != nil {
 			return nil, err
 		}
 

@@ -12,6 +12,52 @@ definitions:
       type:
         type: string
     type: object
+  model.Camera:
+    properties:
+      createdAt:
+        description: default = current timestamp
+        type: string
+      groupIds:
+        items:
+          type: integer
+        type: array
+      id:
+        description: serial
+        type: integer
+      updatedAt:
+        description: default = current timestamp
+        type: string
+      url:
+        type: string
+      uuid:
+        type: string
+    type: object
+  model.CameraCreate:
+    properties:
+      groupId:
+        type: integer
+      url:
+        type: string
+      uuid:
+        type: string
+    type: object
+  model.CameraGroupUpdate:
+    properties:
+      action:
+        enum:
+        - add
+        - remove
+        type: string
+      cameraUuid:
+        type: string
+      groupId:
+        minimum: 0
+        type: integer
+    required:
+    - action
+    - cameraUuid
+    - groupId
+    type: object
   model.GroupCreate:
     properties:
       title:
@@ -21,6 +67,9 @@ definitions:
     type: object
   model.MlFrame:
     properties:
+      createdAt:
+        description: default = current timestamp
+        type: string
       detectedClassId:
         type: integer
       fileName:
@@ -32,6 +81,9 @@ definitions:
         type: number
       timeCodeMl:
         type: number
+      updatedAt:
+        description: default = current timestamp
+        type: string
       videoId:
         description: fk
         type: integer
@@ -151,6 +203,7 @@ definitions:
         minimum: 0
         type: integer
       videoId:
+        minimum: 1
         type: integer
     required:
     - action
@@ -163,6 +216,203 @@ info:
   title: ЛЦТ-2023 видео-детекция незаконной торговли API
   version: 0.0.1
 paths:
+  /api/v1/cameras:
+    get:
+      consumes:
+      - application/json
+      description: Получение списка подключений к камерам
+      parameters:
+      - description: Фильтр поиска
+        in: query
+        name: filter
+        type: string
+      - description: Значение фильтра
+        in: query
+        name: value
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Подключения к камерам
+          schema:
+            items:
+              $ref: '#/definitions/model.Camera'
+            type: array
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Получение списка подключений к камерам
+      tags:
+      - cameras
+    post:
+      consumes:
+      - application/json
+      description: Создание подключения к камере (доступно только администратору)
+      parameters:
+      - description: Данные для создания подключения к камере
+        in: body
+        name: cameraData
+        required: true
+        schema:
+          $ref: '#/definitions/model.CameraCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Подключение к камере успешно создано
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Создание подключения к камере
+      tags:
+      - cameras
+  /api/v1/cameras/{uuid}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление подключения к камере (доступно только администратору)
+      parameters:
+      - description: Id подключения к камере
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Подключение к камере успешно удалено
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Удаление подключения к камере
+      tags:
+      - cameras
+    get:
+      consumes:
+      - application/json
+      description: Получение подключения к камере
+      parameters:
+      - description: Uuid подключения к камере
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Подключение к камере
+          schema:
+            $ref: '#/definitions/model.Camera'
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Получение подключения к камере
+      tags:
+      - cameras
+  /api/v1/cameras/{uuid}/frames:
+    get:
+      consumes:
+      - application/json
+      description: Получение кадров с камеры
+      parameters:
+      - description: Uuid подключения к камере
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Кадры с камеры
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Получение кадров с камеры
+      tags:
+      - cameras
+  /api/v1/cameras/many:
+    post:
+      consumes:
+      - application/json
+      description: Создание подключений к камерам (доступно только администратору)
+      parameters:
+      - description: Данные для создания подключений к камерам
+        in: body
+        name: camerasData
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/model.CameraCreate'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Подключения к камерам успешно созданы
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Создание подключений к камерам
+      tags:
+      - cameras
+  /api/v1/cameras/updateGroup:
+    post:
+      consumes:
+      - application/json
+      description: Обновление группы камеры (доступно только администратору)
+      parameters:
+      - description: Данные для обновления группы камеры
+        in: body
+        name: updateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/model.CameraGroupUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Группа камеры успешно обновлена
+          schema:
+            type: string
+        "403":
+          description: Доступ запрещен
+          schema:
+            type: string
+        "422":
+          description: Неверный формат данных
+          schema:
+            type: string
+      summary: Обновление группы камеры
+      tags:
+      - cameras
   /api/v1/frames/learn:
     post:
       consumes:

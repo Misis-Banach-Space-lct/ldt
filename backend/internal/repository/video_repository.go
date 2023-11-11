@@ -218,7 +218,15 @@ func (vr *videoPgRepository) DeleteOne(c context.Context, videoId int) error {
 
 	_, err = tx.Exec(c, `
 		delete from `+model.VideosTableName+"_"+model.GroupsTableName+`
-		where videoId = $1
+		where videoId = $1;
+	`, videoId)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(c, `
+		delete from `+model.MlFramesTableName+`
+		where videoId = $1;
 	`, videoId)
 	if err != nil {
 		return err
@@ -226,7 +234,7 @@ func (vr *videoPgRepository) DeleteOne(c context.Context, videoId int) error {
 
 	_, err = tx.Exec(c, `
 		delete from `+model.VideosTableName+`
-		where id = $1
+		where id = $1;
 	`, videoId)
 	if err != nil {
 		return err

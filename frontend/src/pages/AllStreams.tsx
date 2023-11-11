@@ -3,14 +3,12 @@ import { useState, useEffect } from "react";
 import AppBar from '../components/AppBar';
 import decoration_lineLINK from '../assets/decoration_line.svg';
 import storage from '../utils/storage';
-import NewConnection from "../components/NewConnection";
 import DisplayedConnections from "../components/DisplayedConnections";
-import DisplayedVideos from "../components/DisplayedVideos";
 import { useAuth } from '../hooks/AuthProvider';
 
 
-function Dashboard() {
-    const limit = 3;
+function AllVideos() {
+    const limit = 100;
     const offset = 0;
     const auth = useAuth();
     if (!auth) throw new Error("AuthProvider is missing");
@@ -26,13 +24,6 @@ function Dashboard() {
         if (storage.getRole() === 'admin') setIsAdmin(true);
         else setIsAdmin(false);
     }, []);
-
-    const [isVideoSent, setIsVideoSent] = useState(false);
-
-
-    const updateIsVideoSent = (newIsVideoSent: boolean) => {
-        setIsVideoSent(newIsVideoSent);
-    };
 
 
     return (
@@ -50,19 +41,14 @@ function Dashboard() {
             >
                 <Container>
                     <AppBar isAuthorized={true} isAdmin={isAdmin} />
-                    <Box sx={{ mt: 3, mb: 3 }}>
-                        {isAdmin && <NewConnection updateIsVideoSent={updateIsVideoSent}/>}
-                    </Box>
                     <Box sx={{ mt: 3, mb: 3 }}> 
-                        <DisplayedVideos limit={limit} offset={offset} isAll={false} isVideoSent={isVideoSent}/>
-                    </Box>
-                    <Box sx={{ mt: 3, mb: 3 }}> 
-                        <DisplayedConnections limit={limit} offset={offset} isAll={false} isVideoSent={isVideoSent}/>
+                        <DisplayedConnections limit={limit} offset={offset} isAll={true} isVideoSent={false}/>
                     </Box>
                 </Container>
             </Box>
+
         </>
     )
 }
 
-export default Dashboard
+export default AllVideos

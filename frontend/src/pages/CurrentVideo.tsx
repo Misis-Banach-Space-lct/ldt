@@ -18,6 +18,8 @@ import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import FrameCard from "../components/FrameCard";
 import { BASE_URL } from '../config';
 
+import ApiFrames from "../services/apiFrames";
+
 interface Video {
     id: number;
     title: string;
@@ -65,12 +67,23 @@ function a11yProps(index: number) {
 }
 
 interface AnnotatedArea extends IArea {
-    classIndex: number;
+    classId: number;
 }
 
 interface LabelingData {
     areas: AnnotatedArea[];
     image: string;
+}
+
+interface FrameData {
+    id: string;
+    videoId: number;
+    fileName: string;
+    timeCode: number;
+    timeCodeMl: number;
+    detectedClassId: number;
+    createdAt: string;
+    updatedAt: string;
 }
 
 function CurrentVideo() {
@@ -91,18 +104,21 @@ function CurrentVideo() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedLabeling, setSelectedLabeling] = useState<string>();
 
-    const [thumbnails, setThumbnails] = useState<string[]>();
+    const [thumbnails, setThumbnails] = useState<FrameData[]>();
+
+    const [timecodeOrig, setTimecodeOrig] = useState<string>('0');
+    const updateTimecodeOrig = (newTimecodeOrig: string) => {
+        setTimecodeOrig(newTimecodeOrig);
+    };
 
 
-    const fetchVideoFrames = async () => {
+    const fetchVideoMlFrames = async () => {
         if (videoId) {
-            let result = await ApiVideo.getVideoFrames({
-                videoId: videoId,
-                type: 'processed'
-            });
+            let result = await ApiVideo.getVideoMlFrames(videoId);
             setThumbnails(result.data);
         }
     };
+
 
 
 
@@ -133,8 +149,24 @@ function CurrentVideo() {
         if (storage.getRole() === 'admin') setIsAdmin(true);
         else setIsAdmin(false);
         fetchVideoData();
-        fetchVideoFrames();
+        fetchVideoMlFrames();
     }, []);
+
+    useEffect(() => {
+        if(labelingData && videoId !== undefined){
+            for(let i = 0; labelingData.length; i++){
+                for (let j = 0; i < labelingData[i].areas.length; j++) {
+                    ApiFrames.sendFrames(labelingData[i].areas[j], videoId, labelingData[i].image);
+                }
+            }
+        }
+    }, [labelingData]);
+
+    useEffect(() => {
+        if (timecodeOrig !== '0') {
+            setValue(1);
+        }
+    }, [timecodeOrig]);
 
     function handleSelectButton() {
         if (videoRef.current && videoSource) {
@@ -147,7 +179,7 @@ function CurrentVideo() {
     const classDict: { [index: number]: string } = {
         0: 'Воздушные шарики/игрушки',
         1: 'Торговая тележка/палатка',
-        2: 'Человек',
+        2: 'Продавец',
         3: 'Иной объект'
     }
 
@@ -216,7 +248,7 @@ function CurrentVideo() {
                                             </CustomTabPanel>
                                             <CustomTabPanel value={value} index={1}>
                                                 <Box sx={{ mt: 1 }}>
-                                                    <OriginalVideoPlayer  videoId={videoData?.id} videoRef={videoRef} videoLink={`${BASE_URL}/${videoSource}?token=${storage.getToken()}`} />
+                                                    <OriginalVideoPlayer timecode={timecodeOrig} videoId={videoData?.id} videoRef={videoRef} videoLink={`${BASE_URL}/${videoSource}?token=${storage.getToken()}`} />
                                                 </Box>
                                             </CustomTabPanel>
                                         </AccordionDetails>
@@ -264,10 +296,11 @@ function CurrentVideo() {
                                                     >Выбрать текущий кадр</Button>
                                                 </Box>
                                             </Box>
-                                            {selectedLabeling &&
+                                            {selectedLabeling && videoId &&
                                                 <>
                                                     <Box sx={{ mb: 10, width: '100%' }}>
-                                                        <ImageAnnotate imageUrl={selectedLabeling} updateLabelingData={updateLabelingData} />
+                                                        <ImageAnnotate videoId={videoId}
+                                                            imageUrl={selectedLabeling} updateLabelingData={updateLabelingData} />
                                                     </Box>
                                                     {labelingData &&
                                                         <Typography
@@ -306,7 +339,7 @@ function CurrentVideo() {
                                                                         {
                                                                             data.areas.map((area) => {
                                                                                 return (
-                                                                                    <ListItemText sx={{ m: 2 }} primary={`Класс: ${classDict[area.classIndex - 1]}`} />
+                                                                                    <ListItemText sx={{ m: 2 }} primary={`Класс: ${classDict[area.classId - 1]}`} />
                                                                                 );
                                                                             })
                                                                         }
@@ -339,9 +372,11 @@ function CurrentVideo() {
                                             Объекты незаконной торговли:
                                         </Typography>
                                         {
-                                            thumbnails?.filter(source => source.includes('processed')).map((source) => {
+                                            thumbnails?.map((frame) => {
                                                 return (
-                                                    <FrameCard source={`${BASE_URL}/${source}?token=${storage.getToken()}`} timecode="10" videoMlRef={videoMlRef} />
+                                                    <FrameCard sources={frame.fileName.split(';')}
+                                                        classId={frame.detectedClassId} timecodeOrig={frame.timeCode} updateTimecodeOrig={updateTimecodeOrig}
+                                                        timecode={frame.timeCodeMl} videoMlRef={videoMlRef} />
                                                 );
                                             })
 
