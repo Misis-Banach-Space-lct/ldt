@@ -43,7 +43,7 @@ func NewGroupPgRepository(db *pgxpool.Pool) (model.GroupRepository, error) {
 			insert into `+model.GroupsTableName+`(id, title) 
 			values ($1, $2)
 			returning id;
-		`, 0, "default").Scan(&groupId)
+		`, 0, "По умолчанию").Scan(&groupId)
 		if err != nil {
 			return nil, err
 		}
