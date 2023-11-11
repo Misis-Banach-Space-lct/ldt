@@ -20,9 +20,8 @@ interface AllVideos {
 
 function DisplayedVideos({ limit, offset, isAll, isVideoSent }: { limit: number, offset: number, isAll: boolean, isVideoSent: boolean }) {
     const [fetchVideos, setFetchedVideos] = useState<AllVideos[]>();
-    const [count, setCount] = useState(0)
-
-
+    
+    
     const fetchVideosFunc = async () => {
         let result = await ApiVideo.getAllVideos({
             limit: limit,
@@ -30,9 +29,10 @@ function DisplayedVideos({ limit, offset, isAll, isVideoSent }: { limit: number,
         });
         setFetchedVideos(result.data);
     };
-
-
-
+    
+    
+    
+    const [count, setCount] = useState(0)
     useEffect(() => {
         fetchVideosFunc();
         const interval = setInterval(() => {
@@ -43,11 +43,6 @@ function DisplayedVideos({ limit, offset, isAll, isVideoSent }: { limit: number,
     }, []);
 
 
-    // useEffect(() => {
-    //     if(isFilter) fetchVideosFilter();
-    // }, [isFilter]);
-
-
     useEffect(() => {
         if (isVideoSent) fetchVideosFunc();
     }, [isVideoSent]);
@@ -56,20 +51,6 @@ function DisplayedVideos({ limit, offset, isAll, isVideoSent }: { limit: number,
     return (
         <>
             <Box>
-                {/* <Box sx={{ display: 'flex' }}>
-                    <SelectGroup updateGroupId={updateGroupId} />
-                    <Button onClick={() => {setIsFilter(true)}} 
-                    style={{
-                        color: '#0B0959',
-                        border: '3px dashed #0B0959',
-                        padding: '10px',
-                        width: '227px',
-                        marginLeft: '20px', 
-                        height: '40px',
-                        marginTop: '2px'
-                    }}>
-                        Отфильтровать</Button>
-                </Box> */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography
                         sx={{

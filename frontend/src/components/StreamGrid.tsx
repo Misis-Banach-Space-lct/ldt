@@ -35,7 +35,7 @@ function VideoCell({ fetchStreams }: { fetchStreams: Stream }) {
         </>
     ) : (
         <Fab onClick={() => {
-            const video = window.prompt('Введите индекс видео:\n' +
+            const video = window.prompt('Введите индекс подключения:\n' +
                 Object.entries(fetchStreams).map(([_, stream], index) => `${index + 1}. ${stream.name}`).join('\n'));
             if (video !== null) {
                 setSelectedVideo(Object.keys(fetchStreams)[parseInt(video, 10) - 1]);

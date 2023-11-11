@@ -1,4 +1,4 @@
-import { Paper, TextField, Typography, Box, Button, InputAdornment, InputBase, IconButton } from "@mui/material";
+import { Paper, TextField, Typography, Box, Button, InputAdornment, InputBase, IconButton, Divider, FormHelperText } from "@mui/material";
 import DownloadIcon from '@mui/icons-material/Download';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -7,9 +7,10 @@ import dotIcon from '../assets/dot_icon.svg'
 import SelectGroup from './SelectGroup'
 import CloseIcon from '@mui/icons-material/Close';
 import ApiStream from '../services/apiStream'
+import ApiCamera from '../services/apiCamera';
 
 
-function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSent: boolean) => void}) {
+function ConnectionForm({ updateIsVideoSent }: { updateIsVideoSent: (newIsVideoSent: boolean) => void }) {
     const [linkArr, setLinkArr] = useState<string[]>([]);
     const [error3, setError3] = useState(false);
     const [helperText3, setHelperText3] = useState('');
@@ -21,7 +22,7 @@ function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSen
     useEffect((() => {
         updateIsVideoSent(isVideoSent)
     })
-    , [isVideoSent])
+        , [isVideoSent])
 
 
     const [groupId, setGroupId] = useState<number>(0);
@@ -70,8 +71,6 @@ function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSen
         setdisableButton(isInvalidFormat)
         setDisableUploadButton(inputText.trim() !== '' || isInvalidFormat);
         setLinkArr(Array.from(linkSet));
-
-        console.log(linkArr, uploadedFiles)
     }
 
 
@@ -79,8 +78,6 @@ function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSen
         setIsVideoSent(false);
         let errorEmpty = false;
         event.preventDefault();
-        console.log(groupId);
-        console.log(titleHelperText)
 
         if (!titleValue) {
             setTitleError(true);
@@ -96,15 +93,23 @@ function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSen
         if (!errorEmpty && linkArr) {
             let Urls = [];
             if (selectedFile) Urls = uploadedFiles;
-            else Urls = linkArr;  
-            let streamTitle = ''          
+            else Urls = linkArr;
+            let streamTitle = ''
+            function generateUUID(): string {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = Math.random() * 16 | 0,
+                        v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
             for (let i = 0; i < Urls.length; i++) {
-                if(Urls.length === 1){
+                if (Urls.length === 1) {
                     streamTitle = titleValue;
                 }
-                else{
+                else {
                     streamTitle = `${titleValue}_${i}`
                 }
+                const uuid = generateUUID()
                 ApiStream.createStream({
                     name: streamTitle,
                     channels: {
@@ -114,7 +119,13 @@ function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSen
                             debug: false,
                         }
                     }
-                });
+                }, uuid);
+                ApiCamera.createCamera({
+                    groupId: groupId,
+                    uuid: uuid,
+                    url: Urls[i],
+                })
+
             }
             setSelectedFile(null);
             setIsVideoSent(true);
@@ -180,7 +191,6 @@ function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSen
             if (validateCSV(fileObjects)) {
                 setdisableButton(false);
                 setUploadedFiles(fileObjects.urls);
-                console.log('Parsed CSV data:', fileObjects.urls);
             } else {
                 setErrorText('CSV файл должен содержать только одну колонку с URL.');
                 setdisableButton(true);
@@ -253,14 +263,22 @@ function ConnectionForm({updateIsVideoSent}: { updateIsVideoSent: (newIsVideoSen
                         sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: '250px', height: '40px', backgroundColor: '#DFDFED' }}
                     >
                         <img width="15px" height="15px" src={dotIcon} alt="logo" style={{ margin: '0 5px' }} />
-                        <InputBase
-                            error={titleError}
-                            value={titleValue}
-                            onChange={handleTitelChange}
-                            sx={{ ml: 1, flex: 1 }}
-                            placeholder="Введите название"
-                            inputProps={{ 'aria-label': 'stream title field' }}
-                        />
+                        <Box>
+                            <InputBase
+                                error={titleError}
+                                value={titleValue}
+                                onChange={handleTitelChange}
+                                sx={{ ml: 1, flex: 1 }}
+                                placeholder="Введите название"
+                                inputProps={{ 'aria-label': 'stream title field' }}
+                            />
+                            {titleError &&
+                                <>
+                                    <Divider sx={{ borderColor: 'error.main' }} />
+                                    <FormHelperText sx={{ color: 'error.main' }}>{titleHelperText}</FormHelperText>
+                                </>
+                            }
+                        </Box>
                     </Paper>
                     <SelectGroup updateGroupId={updateGroupId} />
                     <Button onClick={handleSendVideo} disabled={disableButton}

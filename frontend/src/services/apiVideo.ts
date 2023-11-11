@@ -73,14 +73,6 @@ const ApiVideo = {
         }
         return await axios.get(`${BASE_URL}/api/v1/frames/ml/${videoId}`, config);
     },
-    async getVideoFile(source: string) {
-        let config = {
-            headers: {
-                Authorization: `Bearer ${storage.getToken()}`
-            }
-        }
-        return await axios.get(`${BASE_URL}/${source}`, config);
-    },
     async createOneVideo(data: CreateVideoData) {
         let config = {
             headers: {
@@ -106,7 +98,6 @@ const ApiVideo = {
         formData.append('archive', data.file); 
         formData.append('title', data.title); 
         formData.append('groupId', data.groupId.toString());
-        console.log(formData)
     
         return await axios.post(`${BASE_URL}/api/v1/videos/many`, formData, config);
     },

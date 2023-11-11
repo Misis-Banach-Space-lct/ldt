@@ -48,9 +48,15 @@ const ApiUser = {
                 Authorization: `Bearer ${storage.getToken()}`
             }
         }
-
-    
         return await axios.post(`${BASE_URL}/api/v1/users/updateGroup`, data,config);
-    }
+    },
+    async deleteUser(userId: number) {
+        let config = {
+            headers: {
+                Authorization: `Bearer ${storage.getToken()}`
+            }
+        }
+        return await axios.delete(`${BASE_URL}/api/v1/users/${userId}`, config);
+    },
 };
 export default ApiUser;

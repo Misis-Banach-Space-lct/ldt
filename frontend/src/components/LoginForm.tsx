@@ -70,8 +70,7 @@ const LoginForm = ({ updateAuthorized }: LoginFormProps) => {
             });
 
 
-            result.then(response => {
-                console.log(response);
+            result.then((_:any) => {
                 setAuthorized(true);
             });
 

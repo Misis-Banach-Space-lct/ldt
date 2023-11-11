@@ -7,6 +7,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from "@mui/material/IconButton";
 import { Dialog, DialogTitle, Button, DialogActions } from '@mui/material'
 import SelectGroupList from '../components/SelectGroupList'
+import Fab from '@mui/material/Fab';
 
 interface allGroups {
     id: number;
@@ -48,26 +49,21 @@ function ListTable({ data }: Props) {
 
 
     const [deleteGroupId, setDeleteGroupId] = useState<number>();
-    const [isGroupAdded, setIsGroupAdded] = useState(false);
-    const [isGroupRemoved, setIsGroupRemoved] = useState(false);
     const [openDialogNewGroup, setOpenDialogNewGroup] = useState<number | null>(null);
     const [openDialog, setOpenDialog] = useState<number | null>(null);
+    const [openDialogDeleteUser, setOpenDialogDeleteUser] = useState<number | null>(null);
 
     function handleClose() {
         setOpenDialog(null);
-        setIsGroupRemoved(false);
+    }
+
+    function handleCloseDeleteUser() {
+        setOpenDialogDeleteUser(null);
     }
 
 
-    useEffect(() => {
-        // if(isGroupAdded) onGroupChange();
-        // if(isGroupRemoved) onGroupChange();
-    }, [isGroupAdded, isGroupRemoved]);
-
     function handleDeleteGroup(userId: number) {
-        console.log(deleteGroupId)
         if (deleteGroupId !== undefined) {
-            console.log('here')
             let result = ApiUser.updateUserGroup({
                 action: 'remove',
                 userId: userId,
@@ -75,7 +71,6 @@ function ListTable({ data }: Props) {
             });
 
             result.then(_ => {
-                setIsGroupRemoved(true);
                 setDeleteGroupId(undefined);
             });
 
@@ -83,9 +78,17 @@ function ListTable({ data }: Props) {
         setOpenDialog(null);
     }
 
+    function handleDeleteUser(userId: number) {
+        let result = ApiUser.deleteUser(userId);
+
+        result.then(_ => {
+            window.location.reload();
+        });
+        setOpenDialogDeleteUser(null);
+    }
+
     function handleCloseNewGroup() {
         setOpenDialogNewGroup(null);
-        setIsGroupAdded(false);
     }
 
     function handleAddGroup(userId: number) {
@@ -97,7 +100,6 @@ function ListTable({ data }: Props) {
             });
 
             result.then(_ => {
-                setIsGroupAdded(true);
                 setGroupId(0);
             });
         }
@@ -123,6 +125,8 @@ function ListTable({ data }: Props) {
                             <ListItemText primary="Роль" style={{ flex: '1 1 0px' }} />
                             <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
                             <ListItemText primary="Группы" style={{ flex: '1 1 0px' }} />
+                            <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
+                            <ListItemText primary="" style={{ flex: '0.3 1 0px' }} />
                         </ListItem>
                         {data.map((item, index) => (
                             <>
@@ -240,6 +244,40 @@ function ListTable({ data }: Props) {
                                                     onClick={() => handleAddGroup(item.id)}>Добавить</Button>
                                             </DialogActions>
                                         </Dialog>
+                                        <Box style={{ flex: '0.3 1 0px' }} >
+                                            <Fab sx={{ height: '10px', width: '35px', ml: 2 }}
+                                                onClick={() => {
+                                                    setOpenDialogDeleteUser(item.id)
+                                                }}
+                                                color="error" aria-label="add">
+                                                <CloseIcon />
+                                            </Fab>
+                                            <Dialog
+                                                open={openDialogDeleteUser === item.id}
+                                                onClose={handleCloseDeleteUser}>
+                                                <DialogTitle>
+                                                    <Typography
+                                                        sx={{
+                                                            fontFamily: 'Nunito Sans',
+                                                            fontWeight: 700,
+                                                            fontSize: '15px',
+                                                            color: '#0B0959',
+                                                            textDecoration: 'none',
+                                                            marginRight: 0,
+                                                            paddingRight: 2,
+                                                        }}
+                                                    >
+                                                        {`Вы точно хотите удалить пользователя?`}
+                                                    </Typography>
+                                                </DialogTitle>
+                                                <DialogActions>
+                                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                                        onClick={handleCloseDeleteUser}>Выйти</Button>
+                                                    <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                                        onClick={() => handleDeleteUser(item.id)}>Удалить</Button>
+                                                </DialogActions>
+                                            </Dialog>
+                                        </Box>
                                     </ListItem>
                                 }
                             </>

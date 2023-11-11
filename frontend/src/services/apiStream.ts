@@ -17,16 +17,7 @@ interface CreateStreamData {
 
 const ApiStream = {
 
-    async createStream(data: CreateStreamData) {
-        function generateUUID(): string {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0,
-                    v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-        const uuid = generateUUID()
-
+    async createStream(data: CreateStreamData, uuid: string) {
         return await axios.post(`${STREAM_URL}/stream/${uuid}/add`, data);
     },
     async getAllStreams() {
@@ -34,6 +25,9 @@ const ApiStream = {
     },
     async getStreamInfo(stream_id: string) {
         return await axios.get(`${STREAM_URL}/stream/${stream_id}/info`);
+    },
+    async deleteStream(stream_id: string) {
+        return await axios.get(`${STREAM_URL}/stream/${stream_id}/delete`);
     },
 };
 export default ApiStream;

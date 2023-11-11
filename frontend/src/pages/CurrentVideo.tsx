@@ -96,7 +96,6 @@ function CurrentVideo() {
     const [value, setValue] = useState(0);
     const handleChange = (_: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
-        console.log(value)
     };
 
     const [videoData, setVideoData] = useState<Video>();
@@ -119,9 +118,6 @@ function CurrentVideo() {
         }
     };
 
-
-
-
     if (!isAuthorized) {
         return null;
     }
@@ -140,7 +136,6 @@ function CurrentVideo() {
             let result = await ApiVideo.getVideoData(videoId);
             setVideoData(result.data);
             setVideoSource(result.data.source);
-            console.log(result.data.source);
         }
         setIsLoading(false);
     };

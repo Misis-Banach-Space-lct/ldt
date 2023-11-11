@@ -1,10 +1,9 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -17,35 +16,48 @@ const MenuProps = {
     },
 };
 
-interface RoleSelectProps {
-    updateRole: (newRole: "admin" | "viewer") => void;
+
+interface allGroups {
+    id: number;
+    title: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
-export default function RoleSelect({ updateRole } : RoleSelectProps) {
+interface GroupSelectProps {
+    updateGroupId: (newGroupId: number) => void;
+    fetchedGroups: allGroups[];
+}
+
+export default function SingleSelectPlaceholder({ updateGroupId, fetchedGroups }: GroupSelectProps) {
     const theme = useTheme();
-    const [roleName, setRoleName] = useState<string>('');
+    const [groupName, setGroupName] = useState<string>('');
+    const [groupId, setGroupId] = useState<number>();
 
     const handleChange = (event: SelectChangeEvent<string>) => {
-        setRoleName(event.target.value);
+        setGroupName(event.target.value);
+        const group = fetchedGroups?.find(group => group.title === event.target.value);
+        if (group) {
+            setGroupId(group.id);
+        }
     };
 
     useEffect(() => {
-        if(roleName === 'Администратор') updateRole('admin');
-        if(roleName === 'Пользователь') updateRole('viewer');
-    }, [roleName]);
+        if(groupId) updateGroupId(groupId);
+    }, [groupId]);
 
     return (
         <FormControl sx={{ width: '252px', mt: 3, backgroundColor: '#DFDFED' }}>
             <Select
                 displayEmpty
-                value={roleName}
+                value={groupName}
                 color='secondary'
                 onChange={handleChange}
                 input={<OutlinedInput />}
                 sx={{ height: '44px' }}
                 renderValue={(selected) => {
                     if (selected.length === 0) {
-                        return 'Администратор';
+                        return 'Выберите группу';
                     }
                     return selected;
                 }}
@@ -53,20 +65,17 @@ export default function RoleSelect({ updateRole } : RoleSelectProps) {
                 inputProps={{ 'aria-label': 'Without label' }}
             >
                 <MenuItem disabled value="">
-                    Выберите роль
+                    Выберите группу
                 </MenuItem>
-                <MenuItem
-                    value="Администратор"
-                    style={{ fontWeight: roleName === "Администратор" ? theme.typography.fontWeightMedium : theme.typography.fontWeightRegular }}
-                >
-                    Администратор
-                </MenuItem>
-                <MenuItem
-                    value="Пользователь"
-                    style={{ fontWeight: roleName === "Пользователь" ? theme.typography.fontWeightMedium : theme.typography.fontWeightRegular }}
-                >
-                    Пользователь
-                </MenuItem>
+                {fetchedGroups?.map((group) => (
+                    <MenuItem
+                        key={group.id}
+                        value={group.title}
+                        style={{ fontWeight: groupName === group.title ? theme.typography.fontWeightMedium : theme.typography.fontWeightRegular }}
+                    >
+                        {group.title}
+                    </MenuItem>
+                ))}
             </Select>
         </FormControl>
     );

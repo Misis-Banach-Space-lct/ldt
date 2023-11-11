@@ -12,11 +12,6 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { BASE_URL } from '../config';
 import storage from '../utils/storage';
 
-// const sources = [
-//     'http://larek.itatmisis.ru:10001/static/processed/frames/6/100.jpg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0VXNlciIsImV4cCI6MTY5OTcxMTA1MH0.wBKGM4YtlPZmPW3t_UjEqfl44vzyVWx7hgrm8qZryjk',
-//     'http://larek.itatmisis.ru:10001/static/processed/frames/6/75.jpg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0VXNlciIsImV4cCI6MTY5OTcxMTA1MH0.wBKGM4YtlPZmPW3t_UjEqfl44vzyVWx7hgrm8qZryjk',
-// ]
-
 interface Props {
     sources: string[];
     timecode: number;
@@ -70,29 +65,6 @@ export default function FrameCard(props: Props) {
 
     return (
         <Card sx={{ maxWidth: '910px', boxShadow: '0px 0px 10px 5px rgba(0,0,0,0.1)', borderRadius: '15px', mt: 2, mb: 10, ml: 'auto', mr: 'auto', display: 'flex' }} >
-            {/* <CardMedia
-                sx={{ width: '50%', aspectRatio: '16/9', position: 'relative' }}
-                image={source}
-                title="detected object"
-            >
-                <Fab color="secondary" aria-label="open" onClick={handleClickOpen} style={{ position: 'absolute', right: 10, top: 10 }}>
-                    <ZoomOutMapIcon />
-                </Fab>
-            </CardMedia>
-            <Dialog
-                open={open}
-                onClose={handleClose}
-                maxWidth="md"
-                fullWidth
-            >
-                <DialogContent>
-                    <img src={source} alt="detected object" style={{ width: '100%', height: 'auto' }} />
-                    <Fab color="secondary" aria-label="close" onClick={handleClose} style={{ position: 'absolute', right: 10, top: 10 }}>
-                        <CloseIcon />
-                    </Fab>
-                </DialogContent>
-            </Dialog> */}
-
             <CardMedia
                 sx={{ width: '50%', aspectRatio: '16/9', position: 'relative' }}
                 title="detected object"

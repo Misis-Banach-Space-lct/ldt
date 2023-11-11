@@ -32,10 +32,6 @@ function DisplayedConnections({ isAll, isVideoSent }: { limit: number, offset: n
         setIsLoading(false)
     }, []);
 
-    useEffect(() => {
-        if (!isLoading) console.log(fetchStreams)
-    }, [isLoading]);
-
 
     useEffect(() => {
         if (isVideoSent) fetchStreamsFunc();

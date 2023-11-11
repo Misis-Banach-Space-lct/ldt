@@ -3,12 +3,13 @@ import { useState, useEffect } from "react";
 import AppBar from '../components/AppBar';
 import decoration_lineLINK from '../assets/decoration_line.svg';
 import storage from '../utils/storage';
-import SelectGroup from '../components/SelectGroup'
+import SelectGroupUsers from '../components/SelectGroupUsers'
 import SelectRole from '../components/SelectRole';
 import { useAuth } from '../hooks/AuthProvider';
 import ApiGroup from "../services/apiGroup";
 import ApiUser from "../services/apiUser";
 import ListTable from "../components/ListTable";
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 
 interface FieldState {
@@ -35,6 +36,13 @@ interface UserData {
     groupIds: number[];
 }
 
+interface allGroups {
+    id: number;
+    title: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 function Users() {
     const auth = useAuth();
     if (!auth) throw new Error("AuthProvider is missing");
@@ -43,14 +51,13 @@ function Users() {
     if (!isAuthorized || !isAdmin) {
         return null;
     }
-    useEffect(() => {
-        if (storage.getRole() === 'admin') setIsAdmin(true);
-        else setIsAdmin(false);
-    }, []);
 
 
     const [fetchedUsers, setFetchedUsers] = useState<UserData[]>();
     const [isLoading, setIsLoading] = useState(true);
+    const [openDialogNewUser, setOpenDialogNewUser] = useState<boolean>(false);
+    const [userLogin, setUserLogin] = useState<string>('');
+    const [userPassword, setUserPassword] = useState<string>('');
 
 
     const fetchUsersData = async () => {
@@ -62,10 +69,6 @@ function Users() {
         setFetchedUsers(result.data);
     };
 
-    useEffect(() => {
-        fetchUsersData();
-        setIsLoading(false);
-    }, []);
 
     const [groupId, setGroupId] = useState<number>(0);
     const updateGroupId = (newGroupId: number) => {
@@ -248,7 +251,6 @@ function Users() {
             updateField('email', { helperText: '', error: false });
             errorEmpty = false;
         }
-        console.log('sandj');
 
 
         if (!errorEmpty) {
@@ -260,17 +262,39 @@ function Users() {
                 role: role,
             });
 
-            result.then(_ => {
+            result.then(response => {
                 updateField('surname', { status: true });
+                setUserLogin(response.data.username)
+                setUserPassword(response.data.password)
+                setOpenDialogNewUser(true);
             });
         }
     };
 
+    const [fetchedGroups, setFetchedGroups] = useState<allGroups[]>();
+    const fetchGroups = async () => {
+        let result = await ApiGroup.getAllGroups({
+            limit: 100,
+        });
 
+        setFetchedGroups(result.data);
+    };
+
+    useEffect(() => {
+        if (fields['group'].status) fetchGroups()
+    }, [fields['group'].status]);
+
+    useEffect(() => {
+        if (storage.getRole() === 'admin') setIsAdmin(true);
+        else setIsAdmin(false);
+        fetchUsersData();
+        fetchGroups()
+        setIsLoading(false);
+    }, []);
 
 
     return (
-        <> {!isLoading &&
+        <> {!isLoading && fetchedGroups &&
             <>
                 <Box
                     sx={{
@@ -287,7 +311,7 @@ function Users() {
                         <AppBar isAuthorized={true} isAdmin={isAdmin} />
                         <>
                             <Box sx={{ mt: 3, mb: 3 }}>
-                                <Paper sx={{ marginTop: 3, borderRadius: '15px' }}>
+                                <Paper sx={{ marginTop: 3, borderRadius: '15px', padding: 3 }}>
                                     <Typography
                                         sx={{
                                             fontFamily: 'Nunito Sans',
@@ -369,7 +393,7 @@ function Users() {
                                             Удалить группу:
                                         </Typography>
                                         <Box>
-                                            <SelectGroup updateGroupId={updateGroupDeleteId} />
+                                            <SelectGroupUsers updateGroupId={updateGroupDeleteId} fetchedGroups={fetchedGroups} />
                                             {fields['groupDelete'].error &&
                                                 <>
                                                     <Divider sx={{ borderColor: 'error.main' }} />
@@ -477,7 +501,7 @@ function Users() {
                                     </Box>
 
                                     <Box sx={{ marginTop: '10px' }}>
-                                        <SelectGroup updateGroupId={updateGroupId} />
+                                        <SelectGroupUsers updateGroupId={updateGroupId} fetchedGroups={fetchedGroups} />
                                     </Box>
                                     <Box sx={{ marginTop: '10px', marginBotton: '10px' }}>
                                         <SelectRole updateRole={updateRole} />
@@ -493,6 +517,61 @@ function Users() {
                                     >
                                         Создать
                                     </Button>
+                                    <Dialog
+                                        open={openDialogNewUser}
+                                        onClose={() => { setOpenDialogNewUser(false) }}>
+                                        <DialogTitle>
+                                            <Typography
+                                                sx={{
+                                                    fontFamily: 'Nunito Sans',
+                                                    fontWeight: 700,
+                                                    fontSize: '15px',
+                                                    color: '#0B0959',
+                                                    textDecoration: 'none',
+                                                    marginRight: 0,
+                                                    paddingRight: 2,
+                                                }}
+                                            >
+                                                {`Данные нового пользователя`}
+                                            </Typography>
+                                        </DialogTitle>
+                                        <DialogContent>
+                                            <Typography
+                                                sx={{
+                                                    fontFamily: 'Nunito Sans',
+                                                    fontWeight: 700,
+                                                    fontSize: '15px',
+                                                    color: '#0B0959',
+                                                    textDecoration: 'none',
+                                                    marginRight: 0,
+                                                    paddingRight: 2,
+                                                }}
+                                            >
+                                                {`Логин: ${userLogin}`}
+                                            </Typography>
+                                            <Typography
+                                                sx={{
+                                                    fontFamily: 'Nunito Sans',
+                                                    fontWeight: 700,
+                                                    fontSize: '15px',
+                                                    color: '#0B0959',
+                                                    textDecoration: 'none',
+                                                    marginRight: 0,
+                                                    paddingRight: 2,
+                                                }}
+                                            >
+                                                {`Пароль: ${userPassword}`}
+                                            </Typography>
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                                onClick={() => { 
+                                                    setOpenDialogNewUser(false)
+                                                    setUserLogin('')
+                                                    setUserPassword('') 
+                                                    window.location.reload()}}>Закрыть</Button>
+                                        </DialogActions>
+                                    </Dialog>
                                 </Paper>
                             </Box>
                         </>
