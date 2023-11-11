@@ -28,13 +28,13 @@ func (r *Router) setupCameraRoutes(group fiber.Router) error {
 
 	cameras := group.Group("/cameras")
 	cameras.Get("/", cameraController.GetAll)
-	cameras.Get("/:id", cameraController.GetOne)
-	cameras.Get("/:id/frames", cameraController.GetFrames)
+	cameras.Get("/:uuid", cameraController.GetOne)
+	cameras.Get("/:uuid/frames", cameraController.GetFrames)
 
 	cameras.Post("/", middleware.CheckAdminRoleMiddleware(), cameraController.CreateOne)
 	cameras.Post("/many", middleware.CheckAdminRoleMiddleware(), cameraController.CreateMany)
 	cameras.Post("/updateGroup", middleware.CheckAdminRoleMiddleware(), cameraController.UpdateGroup)
-	cameras.Delete("/:id", middleware.CheckAdminRoleMiddleware(), cameraController.DeleteOne)
+	cameras.Delete("/:uuid", middleware.CheckAdminRoleMiddleware(), cameraController.DeleteOne)
 
 	return nil
 }

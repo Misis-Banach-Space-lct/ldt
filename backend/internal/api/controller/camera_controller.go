@@ -182,7 +182,7 @@ func (cc *cameraController) GetOne(c *fiber.Ctx) error {
 		}
 	}
 
-	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", cameraUuid, groupIds)
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "connUuid", cameraUuid, groupIds)
 	if err != nil {
 		return response.ErrGetRecordsFailed(cc.modelName, err)
 	}
@@ -223,7 +223,7 @@ func (cc *cameraController) UpdateGroup(c *fiber.Ctx) error {
 		groupIds[idx] = group.Id
 	}
 
-	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", updateRequest.CameraUuid, groupIds)
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "connUuid", updateRequest.CameraUuid, groupIds)
 	if err != nil {
 		return response.ErrGetRecordsFailed(cc.modelName, err)
 	}
@@ -279,7 +279,7 @@ func (cc *cameraController) GetFrames(c *fiber.Ctx) error {
 		}
 	}
 
-	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", cameraUuid, groupIds)
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "connUuid", cameraUuid, groupIds)
 	if err != nil {
 		return response.ErrGetRecordsFailed(cc.modelName, err)
 	}
@@ -327,7 +327,7 @@ func (cc *cameraController) DeleteOne(c *fiber.Ctx) error {
 		groupIds[idx] = group.Id
 	}
 
-	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", cameraUuid, groupIds)
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "connUuid", cameraUuid, groupIds)
 	if err != nil {
 		return response.ErrGetRecordsFailed(cc.modelName, err)
 	}

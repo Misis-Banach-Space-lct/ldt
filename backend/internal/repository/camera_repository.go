@@ -18,7 +18,7 @@ func NewCameraPgRepository(db *pgxpool.Pool) (model.CameraRepository, error) {
 	_, err := db.Exec(context.Background(), `
 		create table if not exists `+model.CamerasTableName+`(
 			id serial primary key,
-			uuid text not null unique,
+			connUuid text not null unique,
 			url text not null,
 			createdAt timestamp default current_timestamp,
 			updatedAt timestamp default current_timestamp
@@ -42,7 +42,7 @@ func (cr *cameraPgRepository) InsertOne(c context.Context, cameraData model.Came
 
 	var cameraId int
 	err = tx.QueryRow(c, `
-		insert into `+model.CamerasTableName+`(uuid, url)
+		insert into `+model.CamerasTableName+`(connUuid, url)
 		values($1, $2)
 		returning "id"
 	`, cameraData.Uuid, cameraData.Url).Scan(&cameraId)
@@ -89,7 +89,7 @@ func (cr *cameraPgRepository) InsertMany(c context.Context, camerasData []model.
 
 		var cameraId int
 		err = innerTx.QueryRow(c, `
-			insert into `+model.CamerasTableName+`(uuid, url)
+			insert into `+model.CamerasTableName+`(connUuid, url)
 			values($1, $2)
 			returning id
 		`, camera.Uuid, camera.Url).Scan(&cameraId)
@@ -131,7 +131,7 @@ func (cr *cameraPgRepository) FindOne(c context.Context, filter string, value an
 
 	sql := `select * from ` + model.CamerasTableName + ` where `
 	if filter != "" {
-		sql += fmt.Sprintf("%s = '%v' and ", filter, value)
+		sql += fmt.Sprintf("%s = '%s' and ", filter, value)
 	}
 	sql += `id in (select cameraId from ` + model.CamerasTableName + "_" + model.GroupsTableName + ` where groupId = any($1))`
 
