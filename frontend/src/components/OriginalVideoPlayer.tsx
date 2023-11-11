@@ -12,10 +12,11 @@ interface Props {
     videoLink: string;
     videoRef: any;
     videoId?: number;
+    timecode: string;
 }
 
 function VideoPlayer(props: Props) {
-    const { videoLink, videoRef, videoId = 0 } = props;
+    const { videoLink, videoRef, videoId = 0, timecode} = props;
     const [numberOfThumbnails, setNumberOfThumbnails] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [thumbnails, setThumbnails] = useState<string[]>();
@@ -47,6 +48,13 @@ function VideoPlayer(props: Props) {
         fetchVideoFrames();
         setIsLoading(false);
     }, []);
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = timecode;
+            videoRef.current.pause();
+        }
+    }, [timecode]);
 
     useEffect(() => {
         let currentIndex = -1;

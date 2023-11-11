@@ -8,7 +8,6 @@ import IconButton from "@mui/material/IconButton";
 import { Dialog, DialogTitle, Button, DialogActions } from '@mui/material'
 import SelectGroupList from '../components/SelectGroupList'
 
-
 interface allGroups {
     id: number;
     title: string;
@@ -66,7 +65,9 @@ function ListTable({ data }: Props) {
     }, [isGroupAdded, isGroupRemoved]);
 
     function handleDeleteGroup(userId: number) {
-        if (deleteGroupId && deleteGroupId !== 0) {
+        console.log(deleteGroupId)
+        if (deleteGroupId !== undefined) {
+            console.log('here')
             let result = ApiUser.updateUserGroup({
                 action: 'remove',
                 userId: userId,
@@ -88,7 +89,7 @@ function ListTable({ data }: Props) {
     }
 
     function handleAddGroup(userId: number) {
-        if (groupId && groupId !== 0) {
+        if (groupId !== undefined) {
             let result = ApiUser.updateUserGroup({
                 action: 'add',
                 userId: userId,
@@ -113,31 +114,27 @@ function ListTable({ data }: Props) {
                 <>
                     <List>
                         <ListItem>
-                            <ListItemText primary="ID" style={{ flex: '1 1 0px' }} />
+                            <ListItemText primary="Фамилия" style={{ flex: '1 1 0px' }} />
                             <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
-                            <ListItemText primary="Last Name" style={{ flex: '1 1 0px' }} />
-                            <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
-                            <ListItemText primary="First Name" style={{ flex: '1 1 0px' }} />
+                            <ListItemText primary="Имя" style={{ flex: '1 1 0px' }} />
                             <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
                             <ListItemText primary="Email" style={{ flex: '1 1 0px' }} />
                             <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
-                            <ListItemText primary="Role" style={{ flex: '1 1 0px' }} />
+                            <ListItemText primary="Роль" style={{ flex: '1 1 0px' }} />
                             <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
-                            <ListItemText primary="Group IDs" style={{ flex: '1 1 0px' }} />
+                            <ListItemText primary="Группы" style={{ flex: '1 1 0px' }} />
                         </ListItem>
                         {data.map((item, index) => (
                             <>
                                 {(item.id !== 0) &&
                                     <ListItem key={index}>
-                                        <ListItemText primary={item.id} style={{ flex: '1 1 0px' }} />
-                                        <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
                                         <ListItemText primary={item.lastName} style={{ flex: '1 1 0px' }} />
                                         <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
                                         <ListItemText primary={item.firstName} style={{ flex: '1 1 0px' }} />
                                         <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
                                         <ListItemText primary={item.email} style={{ flex: '1 1 0px' }} />
                                         <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
-                                        <ListItemText primary={item.role} style={{ flex: '1 1 0px' }} />
+                                        <ListItemText primary={(item.role === 'admin') ? 'Администратор' : 'Пользователь'} style={{ flex: '1 1 0px' }} />
                                         <Divider orientation="vertical" flexItem sx={{ mr: 1 }} />
                                         <Accordion sx={{ width: '100%', backgroundColor: '#DFDFED', flex: '1 1 0px' }}>
                                             <AccordionSummary
@@ -155,7 +152,6 @@ function ListTable({ data }: Props) {
                                                                 <Divider />
                                                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'no-wrap', minHeight: '40px', mt: 1 }}>
                                                                     <Typography
-                                                                        variant="h1"
                                                                         sx={{
                                                                             fontFamily: 'Nunito Sans',
                                                                             fontWeight: 700,
@@ -163,26 +159,28 @@ function ListTable({ data }: Props) {
                                                                             color: '#0B0959',
                                                                             textDecoration: 'none',
                                                                             marginRight: 0,
-                                                                            paddingRight: 2,
-                                                                            marginTop: 1.5,
+                                                                            padding: 0.5,
                                                                         }}
                                                                     >
                                                                         {id}. {fetchedGroups?.find(group => group.id === id)?.title}
                                                                     </Typography>
-                                                                    {(id !== 0) &&
-                                                                        <IconButton key={id} onClick={() => {
-                                                                            setDeleteGroupId(id);
-                                                                            setOpenDialog(id)
-                                                                        }}>
-                                                                            <CloseIcon />
-                                                                        </IconButton>}
+                                                                    <IconButton key={id} onClick={() => {
+                                                                        setDeleteGroupId(id);
+                                                                        setOpenDialog(item.id)
+                                                                    }} sx={{ color: '#0B0959' }}>
+                                                                        <CloseIcon />
+                                                                    </IconButton>
                                                                 </Box>
                                                                 <Divider />
                                                             </>
                                                         )
                                                     })}
+                                                    <Divider />
                                                     <Button onClick={() => setOpenDialogNewGroup(item.id)}
-                                                        style={{ color: 'white', fontFamily: 'Nunito Sans', backgroundColor: '#0B0959', borderRadius: '8px', textTransform: 'capitalize' }}
+                                                        style={{
+                                                            color: 'white', fontFamily: 'Nunito Sans', marginTop: 1,
+                                                            backgroundColor: '#0B0959', borderRadius: '8px', textTransform: 'capitalize'
+                                                        }}
                                                     >Добавить в группу</Button>
                                                 </Box>
                                             </AccordionDetails>
@@ -192,11 +190,25 @@ function ListTable({ data }: Props) {
                                             open={openDialog === item.id}
                                             onClose={handleClose}>
                                             <DialogTitle>
-                                                {`Вы точно хотите удалить видео из группы?`}
+                                                <Typography
+                                                    sx={{
+                                                        fontFamily: 'Nunito Sans',
+                                                        fontWeight: 700,
+                                                        fontSize: '15px',
+                                                        color: '#0B0959',
+                                                        textDecoration: 'none',
+                                                        marginRight: 0,
+                                                        paddingRight: 2,
+                                                    }}
+                                                >
+                                                    {`Вы точно хотите удалить пользователя из группы?`}
+                                                </Typography>
                                             </DialogTitle>
                                             <DialogActions>
-                                                <Button onClick={handleClose}>Выйти</Button>
-                                                <Button onClick={() => handleDeleteGroup(item.id)}>Удалить</Button>
+                                                <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                                    onClick={handleClose}>Выйти</Button>
+                                                <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                                    onClick={() => handleDeleteGroup(item.id)}>Удалить</Button>
                                             </DialogActions>
                                         </Dialog>
 
@@ -222,8 +234,10 @@ function ListTable({ data }: Props) {
                                                 {item.groupIds && <SelectGroupList updateGroupId={updateGroupId} groupIds={item.groupIds} />}
                                             </DialogContent>
                                             <DialogActions>
-                                                <Button onClick={handleCloseNewGroup}>Закрыть</Button>
-                                                <Button onClick={() => handleAddGroup(item.id)}>Добавить</Button>
+                                                <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                                    onClick={handleCloseNewGroup}>Закрыть</Button>
+                                                <Button style={{ color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'white', borderRadius: '8px' }}
+                                                    onClick={() => handleAddGroup(item.id)}>Добавить</Button>
                                             </DialogActions>
                                         </Dialog>
                                     </ListItem>

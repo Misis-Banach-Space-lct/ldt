@@ -2,9 +2,11 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"lct/internal/logging"
 	"lct/internal/model"
 	"lct/internal/response"
+	"lct/internal/service"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -52,12 +54,12 @@ func (cc *cameraController) CreateOne(c *fiber.Ctx) error {
 		return response.ErrValidationError(cc.modelName, err)
 	}
 
-	_, err := cc.cameraRepo.InsertOne(c.Context(), cameraData)
+	cameraId, err := cc.cameraRepo.InsertOne(c.Context(), cameraData)
 	if err != nil {
 		return response.ErrGetRecordsFailed(cc.modelName, err)
 	}
 
-	// TODO: send data to ml
+	go service.ProcessStream(cameraId, cameraData.Url)
 
 	return c.SendStatus(http.StatusCreated)
 }
@@ -84,12 +86,14 @@ func (cc *cameraController) CreateMany(c *fiber.Ctx) error {
 		return response.ErrValidationError(cc.modelName, err)
 	}
 
-	_, err := cc.cameraRepo.InsertMany(c.Context(), camerasData)
+	cameraIds, err := cc.cameraRepo.InsertMany(c.Context(), camerasData)
 	if err != nil {
 		return response.ErrGetRecordsFailed(cc.modelName, err)
 	}
 
-	// TODO: send data to ml
+	for idx, cameraData := range camerasData {
+		go service.ProcessStream(cameraIds[idx], cameraData.Url)
+	}
 
 	return c.SendStatus(http.StatusCreated)
 }
@@ -148,14 +152,14 @@ func (cc *cameraController) GetAll(c *fiber.Ctx) error {
 //	@Tags			cameras
 //	@Accept			json
 //	@Produce		json
-//	@Param			id						path		int				true	"Id подключения к камере"
+//	@Param			uuid						path		string				true	"Uuid подключения к камере"
 //	@Success		200						{object}	model.Camera	"Подключение к камере"
 //	@Failure		422						{object}	string			"Неверный формат данных"
-//	@Router			/api/v1/cameras/{id}	[get]
+//	@Router			/api/v1/cameras/{uuid}	[get]
 func (cc *cameraController) GetOne(c *fiber.Ctx) error {
-	cameraId, err := c.ParamsInt("id")
+	cameraUuid, err := c.ParamsInt("uuid")
 	if err != nil {
-		return response.ErrValidationError("cameraId", err)
+		return response.ErrValidationError("cameraUuid", err)
 	}
 
 	user, err := cc.userRepo.FindOne(c.Context(), "username", c.Locals("x-username"))
@@ -181,7 +185,7 @@ func (cc *cameraController) GetOne(c *fiber.Ctx) error {
 		}
 	}
 
-	camera, err := cc.cameraRepo.FindOne(c.Context(), "id", cameraId, groupIds)
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", cameraUuid, groupIds)
 	if err != nil {
 		return response.ErrGetRecordsFailed(cc.modelName, err)
 	}
@@ -212,11 +216,26 @@ func (cc *cameraController) UpdateGroup(c *fiber.Ctx) error {
 	}
 
 	var err error
+	groups, err := cc.groupRepo.FindMany(c.Context(), 0, -1)
+	if err != nil {
+		return response.ErrGetRecordsFailed(cc.modelName, err)
+	}
+
+	groupIds := make([]int, len(groups))
+	for idx, group := range groups {
+		groupIds[idx] = group.Id
+	}
+
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", updateRequest.CameraUuid, groupIds)
+	if err != nil {
+		return response.ErrGetRecordsFailed(cc.modelName, err)
+	}
+
 	switch updateRequest.Action {
 	case model.GroupActionAdd:
-		err = cc.cameraRepo.AddToGroup(c.Context(), updateRequest.CameraId, updateRequest.GroupId)
+		err = cc.cameraRepo.AddToGroup(c.Context(), camera.Id, updateRequest.GroupId)
 	case model.GroupActionRemove:
-		err = cc.cameraRepo.RemoveFromGroup(c.Context(), updateRequest.CameraId, updateRequest.GroupId)
+		err = cc.cameraRepo.RemoveFromGroup(c.Context(), camera.Id, updateRequest.GroupId)
 	default:
 		return response.ErrCustomResponse(http.StatusBadRequest, "invalid action", nil)
 	}
@@ -234,11 +253,56 @@ func (cc *cameraController) UpdateGroup(c *fiber.Ctx) error {
 //	@Tags			cameras
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int			true	"Id подключения к камере"
+//	@Param			uuid	path		string			true	"Uuid подключения к камере"
 //	@Success		200	{object}	[]string	"Кадры с камеры"
-//	@Failure		501	{object}	string		"Не реализовано"
+//	@Router			/api/v1/cameras/{uuid}/frames	[get]
 func (cc *cameraController) GetFrames(c *fiber.Ctx) error {
-	return c.SendStatus(http.StatusNotImplemented)
+	cameraUuid := c.Params("uuid")
+
+	user, err := cc.userRepo.FindOne(c.Context(), "username", c.Locals("x-username"))
+	if err != nil {
+		return response.ErrGetRecordsFailed(cc.modelName, err)
+	}
+
+	var groupIds []int
+	if user.Role == model.RoleAdmin {
+		groups, err := cc.groupRepo.FindMany(c.Context(), 0, -1)
+		if err != nil {
+			return response.ErrGetRecordsFailed(cc.modelName, err)
+		}
+
+		groupIds = make([]int, len(groups))
+		for idx, group := range groups {
+			groupIds[idx] = group.Id
+		}
+	} else {
+		groupIds, err = cc.userRepo.GetGroups(c.Context(), user.Id)
+		if err != nil {
+			return response.ErrGetRecordsFailed(cc.modelName, err)
+		}
+	}
+
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", cameraUuid, groupIds)
+	if err != nil {
+		return response.ErrGetRecordsFailed(cc.modelName, err)
+	}
+
+	var frames []string
+	paths := []string{
+		fmt.Sprintf("static/processed/s_frames/%d", camera.Id),
+		fmt.Sprintf("static/processed/s_frames_a/%d", camera.Id),
+		fmt.Sprintf("static/processed/s_frames_h/%d", camera.Id),
+	}
+	for _, path := range paths {
+		curFrames, err := getDirFiles(path)
+		if err != nil {
+			continue
+		}
+
+		frames = append(frames, curFrames...)
+	}
+
+	return c.Status(http.StatusOK).JSON(frames)
 }
 
 // DeleteOne godoc
@@ -252,14 +316,29 @@ func (cc *cameraController) GetFrames(c *fiber.Ctx) error {
 //	@Success		200						{string}	string	"Подключение к камере успешно удалено"
 //	@Failure		403						{object}	string	"Доступ запрещен"
 //	@Failure		422						{object}	string	"Неверный формат данных"
-//	@Router			/api/v1/cameras/{id}	[delete]
+//	@Router			/api/v1/cameras/{uuid}	[delete]
 func (cc *cameraController) DeleteOne(c *fiber.Ctx) error {
-	cameraId, err := c.ParamsInt("id")
+	cameraUuid, err := c.ParamsInt("uuid")
 	if err != nil {
-		return response.ErrValidationError("cameraId", err)
+		return response.ErrValidationError("cameraUuid", err)
 	}
 
-	err = cc.cameraRepo.DeleteOne(c.Context(), cameraId)
+	groups, err := cc.groupRepo.FindMany(c.Context(), 0, -1)
+	if err != nil {
+		return response.ErrGetRecordsFailed(cc.modelName, err)
+	}
+
+	groupIds := make([]int, len(groups))
+	for idx, group := range groups {
+		groupIds[idx] = group.Id
+	}
+
+	camera, err := cc.cameraRepo.FindOne(c.Context(), "uuid", cameraUuid, groupIds)
+	if err != nil {
+		return response.ErrGetRecordsFailed(cc.modelName, err)
+	}
+
+	err = cc.cameraRepo.DeleteOne(c.Context(), camera.Id)
 	if err != nil {
 		return response.ErrDeleteRecordsFailed(cc.modelName, err)
 	}

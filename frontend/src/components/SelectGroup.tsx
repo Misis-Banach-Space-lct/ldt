@@ -69,7 +69,7 @@ export default function SingleSelectPlaceholder({ updateGroupId }: GroupSelectPr
                 sx={{ height: '44px' }}
                 renderValue={(selected) => {
                     if (selected.length === 0) {
-                        return 'Общая группа';
+                        return 'Выберите группу';
                     }
                     return selected;
                 }}

@@ -23,6 +23,7 @@ app.conf.update(
 class Response(BaseModel):
     cadrs: list[MlResult]
     humans: list[MlResult]
+    active: list[MlResult]
     processedSource: str
 
 
@@ -34,8 +35,18 @@ def process_video(video_id: int, video_source: str):
     processed_source = os.listdir("../static/processed/videos")
     processed_source.sort()
     return Response(
-        cadrs=res[0], humans=res[1], processedSource=processed_source[-1]
+        cadrs=res[0], humans=res[1], active=res[2], processedSource=processed_source[-1]
     ).model_dump_json()
+
+
+@app.task
+def process_stream(video_id: int, video_source: str):
+    print("starting process_stream")
+    print(f"video source {video_source}")
+
+    process(video_id, video_source, rtsp=True)
+
+    return
 
 
 @app.task

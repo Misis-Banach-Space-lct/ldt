@@ -17,6 +17,7 @@ import (
 type MlResult struct {
 	Cadrs           []model.MlFrameCreate `json:"cadrs"`
 	Humans          []model.MlFrameCreate `json:"humans"`
+	Active          []model.MlFrameCreate `json:"active"`
 	ProcessedSource string                `json:"processedSource"`
 }
 
@@ -88,6 +89,13 @@ func ProcessVideoMl(videoId int, videoSource, fileName string, videoRepo model.V
 			return
 		}
 	}
+	if len(resp.Active) != 0 {
+		logging.Log.Debug("inserting active ml frames")
+		if err := mlFrameRepo.InsertMany(c, resp.Active); err != nil {
+			logging.Log.Errorf("failed to insert active ml frames: %s", err)
+			return
+		}
+	}
 
 	path := "static/processed/videos/" + resp.ProcessedSource
 	fileNameAvi := strings.Replace(fileName, ".mp4", ".avi", 1)
@@ -113,4 +121,28 @@ func ProcessVideoMl(videoId int, videoSource, fileName string, videoRepo model.V
 		logging.Log.Errorf("failed to set video status as processed: %s", err)
 		return
 	}
+}
+
+func ProcessStream(videoId int, videoSource string) {
+	cli, _ := gocelery.NewCeleryClient(
+		gocelery.NewRedisBroker(redisPool),
+		&gocelery.RedisCeleryBackend{Pool: redisPool},
+		1,
+	)
+
+	taskName := "worker.process_stream"
+
+	asyncResult, err := cli.Delay(taskName, videoId, videoSource)
+	if err != nil {
+		logging.Log.Errorf("failed to run the task: %s", err)
+		return
+	}
+
+	res, err := asyncResult.Get(1 * time.Second)
+	if err != nil {
+		logging.Log.Errorf("failed to get task result: %s", err)
+		return
+	}
+
+	logging.Log.Debugf("result: %+v of type %+v", res, reflect.TypeOf(res))
 }

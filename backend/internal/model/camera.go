@@ -23,9 +23,9 @@ type CameraCreate struct {
 }
 
 type CameraGroupUpdate struct {
-	Action   string `json:"action" validate:"required,oneof=add remove"`
-	CameraId int    `json:"cameraId" validate:"required,gt=0"`
-	GroupId  int    `json:"groupId" validate:"required,gte=0"`
+	Action     string `json:"action" validate:"required,oneof=add remove"`
+	CameraUuid string `json:"cameraUuid" validate:"required"`
+	GroupId    int    `json:"groupId" validate:"required,gte=0"`
 }
 
 type CameraRepository interface {
@@ -33,7 +33,7 @@ type CameraRepository interface {
 	InsertMany(c context.Context, camerasData []CameraCreate) ([]int, error)
 	FindOne(c context.Context, filter string, value any, userGroupIds []int) (Camera, error)
 	FindMany(c context.Context, filter string, value any, userGroupIds []int) ([]Camera, error)
-	DeleteOne(c context.Context, cameraId int) error // deletes camera source and all related frames
+	DeleteOne(c context.Context, cameraUuid int) error // deletes camera source and all related frames
 	AddToGroup(c context.Context, cameraId, groupId int) error
 	RemoveFromGroup(c context.Context, cameraId, groupId int) error
 	GetGroupIds(c context.Context, cameraId int) ([]int, error)

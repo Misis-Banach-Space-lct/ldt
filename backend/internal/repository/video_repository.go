@@ -209,6 +209,7 @@ func (vr *videoPgRepository) FindMany(c context.Context, filter string, value an
 	return videos, nil
 }
 
+// TODO: remove records from ml_frames
 func (vr *videoPgRepository) DeleteOne(c context.Context, videoId int) error {
 	tx, err := vr.db.Begin(c)
 	if err != nil {

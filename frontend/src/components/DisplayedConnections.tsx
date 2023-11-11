@@ -1,42 +1,50 @@
-import VideoCard from "./VideoCard";
-import SelectGroup from './MultiSelectGroup'
+import StreamCard from "./StreamCard";
 import { Box, Typography, Button } from "@mui/material";
-import ApiVideo from "../services/apiVideo";
+import ApiStream from "../services/apiStream";
 import { useEffect, useState } from "react";
 import arrowRight from '../assets/arrowRight.svg'
 
 
-interface AllVideos {
-    id: number;
-    title: string;
-    source: string;
-    status: string;
-    createdAt: string;
-    updatedAt: string;
-    processedSource: string;
-    groupIds: number[];
+interface Channel {
+    status?: number;
+    on_demand?: boolean;
+    url: string;
+}
+
+interface Stream {
+    channels: Record<string, Channel>;
+    name: string;
 }
 
 
-function DisplayedVideos({ limit, offset, isAll }: { limit: number, offset: number, isAll: boolean }) {
-    const [fetchVideos, setFetchedVideos] = useState<AllVideos[]>();
+function DisplayedConnections({ isAll, isVideoSent }: { limit: number, offset: number, isAll: boolean, isVideoSent: boolean }) {
+    const [fetchStreams, setFetchedStreams] = useState<Stream>();
+    const [isLoading, setIsLoading] = useState(true)
+
+
+    const fetchStreamsFunc = async () => {
+        let result = await ApiStream.getAllStreams();
+        setFetchedStreams(result.data['payload']);
+    };
+
+    useEffect(() => {
+        fetchStreamsFunc();
+        setIsLoading(false)
+    }, []);
+
+    useEffect(() => {
+        if (!isLoading) console.log(fetchStreams)
+    }, [isLoading]);
 
 
     useEffect(() => {
-        const fetchVideos = async () => {
-            let result = await ApiVideo.getAllVideos({
-                limit: limit,
-                offset: offset,
-            });
-            setFetchedVideos(result.data);
-        };
-        fetchVideos();
-    }, []);
+        if (isVideoSent) fetchStreamsFunc();
+    }, [isVideoSent]);
+
 
     return (
         <>
             <Box>
-                <SelectGroup />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography
                         sx={{
@@ -52,7 +60,7 @@ function DisplayedVideos({ limit, offset, isAll }: { limit: number, offset: numb
                     >
                         Подключенные камеры:
                     </Typography>
-                    {!isAll && <Button href="/videos"
+                    {!isAll && <Button href="/streams"
                         style={{
                             color: '#0B0959', fontFamily: 'Nunito Sans', backgroundColor: 'transparent',
                             borderRadius: '8px', textTransform: 'lowercase', marginRight: 20, width: '70px',
@@ -63,21 +71,30 @@ function DisplayedVideos({ limit, offset, isAll }: { limit: number, offset: numb
                         <img width="15px" height="15px" src={arrowRight} alt="logo" style={{ margin: '0 5px', paddingTop: '2px' }} />
                     </Button>}
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', mt: 1 }}>
-                    {fetchVideos?.map((video: AllVideos) => {
-                        return (
-                            <VideoCard
-                                title={video.title}
-                                video_id={video.id}
-                                time={video.createdAt}
-                                status={video.status}
-                            />
-                        );
-                    })}
-                </Box>
+                <Button href='/streamsView' style={{ color: 'white', fontFamily: 'Nunito Sans', backgroundColor: '#0B0959', borderRadius: '8px', textTransform: 'capitalize' }}>
+                    Просмотреть сетку камер
+                </Button>
+                {!isLoading &&
+                    <Box sx={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', mt: 1 }}>
+                        {fetchStreams && Object.entries(fetchStreams).map(([key, stream], index) => {
+                            if (isAll === false && index > 2) {
+                                return null;
+                            }
+                            return (
+                                <StreamCard
+                                    key={index}
+                                    title={stream.name}
+                                    stream_id={key}
+                                    status={'ready'}
+                                />
+                            );
+                        })}
+                    </Box>
+
+                }
             </Box>
         </>
     )
 }
 
-export default DisplayedVideos
+export default DisplayedConnections

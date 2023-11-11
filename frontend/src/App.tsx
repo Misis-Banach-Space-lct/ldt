@@ -7,8 +7,10 @@ import { ThemeProvider, createTheme } from '@mui/material';
 import PrivateRoute from './routes/PrivateRoute'
 import { AuthProvider } from './hooks/AuthProvider';
 import AllVideos from './pages/AllVideos';
+import AllStreams from './pages/AllStreams';
 import CurrentVideo from './pages/CurrentVideo';
-import { Box } from '@mui/material';
+import StreamGridView from './pages/StreamGridView';
+
 
 const theme = createTheme({
   palette: {
@@ -34,12 +36,12 @@ function App() {
               <Route path="/home" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
               <Route path="/users" element={<PrivateRoute><Users /></PrivateRoute>} />
               <Route path="/videos" element={<PrivateRoute><AllVideos /></PrivateRoute>} />
-              <Route path="/videoStream/1" element={<PrivateRoute><CurrentStream /></PrivateRoute>} />
+              <Route path="/streams" element={<PrivateRoute><AllStreams/></PrivateRoute>} />
+              <Route path="/streamsView" element={<PrivateRoute><StreamGridView/></PrivateRoute>} />
+              <Route path="/currentStream/:streamId" element={<PrivateRoute><CurrentStream /></PrivateRoute>} />
               <Route path="/currentVideo/:videoId" element={<PrivateRoute><CurrentVideo /></PrivateRoute>} />
             </Routes>
           </AuthProvider>
-          <Box sx={{height: '100px', backgroundColor: '#DFDFED'}}>
-          </Box>
       </ThemeProvider>
     </>
   )
