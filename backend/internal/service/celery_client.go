@@ -14,10 +14,6 @@ import (
 	"github.com/gocelery/gocelery"
 )
 
-/*
-{"cadrs":[{"fileName":["../static/processed/frames/11/73.jpg","../static/processed/frames/11/74.jpg","../static/processed/frames/11/75.jpg","../static/processed/frames/11/81.jpg","../static/processed/frames/11/82.jpg","../static/processed/frames/11/83.jpg","../static/processed/frames/11/84.jpg","../static/processed/frames/11/85.jpg","../static/processed/frames/11/86.jpg","../static/processed/frames/11/87.jpg","../static/processed/frames/11/88.jpg"],"videoId":11,"timeCode":17.6,"timeCodeMl":3.52,"detectedClassId":1}],"humans":[]}
-*/
-
 type MlResult struct {
 	Cadrs           []model.MlFrameCreate `json:"cadrs"`
 	Humans          []model.MlFrameCreate `json:"humans"`
@@ -113,7 +109,7 @@ func ProcessVideoMl(videoId int, videoSource, fileName string, videoRepo model.V
 		return
 	}
 
-	if err := videoRepo.SetCompleted(c, videoId, path+"/"+fileNameAvi); err != nil {
+	if err := videoRepo.SetCompleted(c, videoId, path+"/"+fileName); err != nil {
 		logging.Log.Errorf("failed to set video status as processed: %s", err)
 		return
 	}
