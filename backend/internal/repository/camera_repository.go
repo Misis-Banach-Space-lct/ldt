@@ -46,11 +46,29 @@ func NewCameraPgRepository(db *pgxpool.Pool) (model.CameraRepository, error) {
 			insert into `+model.CamerasTableName+`(connUuid, url)
 			values('27aec28e-6181-4753-9acd-0456a75f0289', 'rtsp://admin:A1234567@188.170.176.190:8028/Streaming/Channels/101?transportmode=unicast&profile=Profile_1')
 		`)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err := tx.Exec(ctx, `
+			create table if not exists `+model.CamerasTableName+"_"+model.GroupsTableName+`(
+				cameraId int,
+				groupId int,
+				foreign key (cameraId) references cameras(id),
+				foreign key (groupId) references groups(id)
+			);
+		`)
+		if err != nil {
+			return nil, err
+		}
 
 		_, err = tx.Exec(ctx, `
 			insert into `+model.CamerasTableName+`_`+model.GroupsTableName+`
 			values(1, 0)
 		`)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
