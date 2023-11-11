@@ -182,7 +182,7 @@ func (ur *userPgRepository) DeleteOne(c context.Context, userId int) error {
 	_, err = tx.Exec(c, `
 		delete from `+model.UsersTableName+`
 		where id = $1
-	`)
+	`, userId)
 	if err != nil {
 		return err
 	}
