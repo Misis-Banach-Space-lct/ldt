@@ -46,7 +46,7 @@ func HTTPAPIServer() {
 
 	if Storage.ServerHTTPDemo() {
 		public.LoadHTMLGlob(Storage.ServerHTTPDir() + "/templates/*")
-		public.GET("/", HTTPAPIServerIndex)
+		// public.GET("/", HTTPAPIServerIndex)
 		public.GET("/pages/stream/list", HTTPAPIStreamList)
 		public.GET("/pages/stream/add", HTTPAPIAddStream)
 		public.GET("/pages/stream/edit/:uuid", HTTPAPIEditStream)
