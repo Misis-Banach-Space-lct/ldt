@@ -21,6 +21,8 @@ func NewMlFramePgRepository(db *pgxpool.Pool) (model.MlFrameRepository, error) {
 			timeCode float,
 			timeCodeMl float,
 			detectedClassId int,
+			createdAt timestamp default current_timestamp,
+			updatedAt timestamp default current_timestamp,
 			foreign key (videoId) references `+model.VideosTableName+`(id)
 		);
 	`)

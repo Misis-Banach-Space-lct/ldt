@@ -228,8 +228,8 @@ func (vc *videoController) GetAllByFilter(c *fiber.Ctx) error {
 		}
 
 		groupIds = make([]int, len(groups))
-		for _, group := range groups {
-			groupIds = append(groupIds, group.Id)
+		for idx, group := range groups {
+			groupIds[idx] = group.Id
 		}
 	} else {
 		groupIds, err = vc.userRepo.GetGroups(c.Context(), user.Id)

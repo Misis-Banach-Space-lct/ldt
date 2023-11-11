@@ -116,7 +116,7 @@ def show(preds: dict, result_after_tracking: list):
             2,
         )
         # cv2.putText(image, 'StacionarnyTorgovec', (int(obj.first_x1), int(obj.first_y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255 , 12), 2)
-        cv2.imwrite(obj.path, image)
+        cv2.imwrite(obj.path[0], image)
 
 
 def post_processing(

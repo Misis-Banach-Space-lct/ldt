@@ -71,8 +71,6 @@ func (uc *userController) CreateOne(c *fiber.Ctx) error {
 		return response.ErrCreateRecordsFailed(uc.modelName, err)
 	}
 
-	// TODO: add mail sending
-	// TODO: change response format
 	return c.Status(http.StatusCreated).JSON(map[string]any{
 		"username": username,
 		"password": plainPassword,

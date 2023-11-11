@@ -1,16 +1,21 @@
 package model
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 var MlFramesTableName = "ml_frames"
 
 type MlFrame struct {
-	Id              int     `json:"id"`      // serial
-	VideoId         int     `json:"videoId"` // fk
-	FileName        string  `json:"fileName"`
-	TimeCode        float64 `json:"timeCode"`
-	TimeCodeMl      float64 `json:"timeCodeMl"`
-	DetectedClassId int     `json:"detectedClassId"`
+	Id              int       `json:"id"`      // serial
+	VideoId         int       `json:"videoId"` // fk
+	FileName        string    `json:"fileName"`
+	TimeCode        float64   `json:"timeCode"`
+	TimeCodeMl      float64   `json:"timeCodeMl"`
+	DetectedClassId int       `json:"detectedClassId"`
+	CreatedAt       time.Time `json:"createdAt"` // default = current timestamp
+	UpdatedAt       time.Time `json:"updatedAt"` // default = current timestamp
 }
 
 type MlFrameCreate struct {

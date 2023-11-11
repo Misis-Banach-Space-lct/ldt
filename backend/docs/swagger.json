@@ -8,6 +8,271 @@
     },
     "basePath": "/",
     "paths": {
+        "/api/v1/cameras": {
+            "get": {
+                "description": "Получение списка подключений к камерам",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "summary": "Получение списка подключений к камерам",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Фильтр поиска",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Значение фильтра",
+                        "name": "value",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Подключения к камерам",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Camera"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создание подключения к камере (доступно только администратору)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "summary": "Создание подключения к камере",
+                "parameters": [
+                    {
+                        "description": "Данные для создания подключения к камере",
+                        "name": "cameraData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CameraCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Подключение к камере успешно создано",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cameras/many": {
+            "post": {
+                "description": "Создание подключений к камерам (доступно только администратору)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "summary": "Создание подключений к камерам",
+                "parameters": [
+                    {
+                        "description": "Данные для создания подключений к камерам",
+                        "name": "camerasData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.CameraCreate"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Подключения к камерам успешно созданы",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cameras/updateGroup": {
+            "post": {
+                "description": "Обновление группы камеры (доступно только администратору)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "summary": "Обновление группы камеры",
+                "parameters": [
+                    {
+                        "description": "Данные для обновления группы камеры",
+                        "name": "updateRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CameraGroupUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Группа камеры успешно обновлена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cameras/{id}": {
+            "get": {
+                "description": "Получение подключения к камере",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "summary": "Получение подключения к камере",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id подключения к камере",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Подключение к камере",
+                        "schema": {
+                            "$ref": "#/definitions/model.Camera"
+                        }
+                    },
+                    "422": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаление подключения к камере (доступно только администратору)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "summary": "Удаление подключения к камере",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id подключения к камере",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Подключение к камере успешно удалено",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Неверный формат данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/frames/learn": {
             "post": {
                 "description": "Создание кадра для обучения с указанными координатами, по которым можно обучать модель",
@@ -1085,6 +1350,73 @@
                 }
             }
         },
+        "model.Camera": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "default = current timestamp",
+                    "type": "string"
+                },
+                "groupIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "description": "serial",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "default = current timestamp",
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CameraCreate": {
+            "type": "object",
+            "properties": {
+                "groupId": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CameraGroupUpdate": {
+            "type": "object",
+            "required": [
+                "action",
+                "cameraId",
+                "groupId"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "add",
+                        "remove"
+                    ]
+                },
+                "cameraId": {
+                    "type": "integer"
+                },
+                "groupId": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
         "model.GroupCreate": {
             "type": "object",
             "required": [
@@ -1099,6 +1431,10 @@
         "model.MlFrame": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "description": "default = current timestamp",
+                    "type": "string"
+                },
                 "detectedClassId": {
                     "type": "integer"
                 },
@@ -1114,6 +1450,10 @@
                 },
                 "timeCodeMl": {
                     "type": "number"
+                },
+                "updatedAt": {
+                    "description": "default = current timestamp",
+                    "type": "string"
                 },
                 "videoId": {
                     "description": "fk",
@@ -1290,7 +1630,8 @@
                     "minimum": 0
                 },
                 "videoId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         }
