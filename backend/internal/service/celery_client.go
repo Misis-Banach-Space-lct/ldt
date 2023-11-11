@@ -113,12 +113,6 @@ func ProcessVideoMl(videoId int, videoSource, fileName string, videoRepo model.V
 		return
 	}
 
-	cmd = exec.Command("rm", path+fileNameAvi)
-	if err := cmd.Run(); err != nil {
-		logging.Log.Errorf("failed to remove .avi video: %s", err)
-		return
-	}
-
 	if err := videoRepo.SetCompleted(c, videoId, path+"/"+fileNameAvi); err != nil {
 		logging.Log.Errorf("failed to set video status as processed: %s", err)
 		return
