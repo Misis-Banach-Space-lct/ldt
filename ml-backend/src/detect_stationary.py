@@ -99,7 +99,6 @@ def save_cadrs(
 
                     cv2.imwrite(save_path + f"/{num_cadr}" + ".jpg", image)
 
-
                     objects[id].path.append(save_path + f"/{num_cadr}" + ".jpg")
 
                     objects[id].timestamp = timestamp_orig

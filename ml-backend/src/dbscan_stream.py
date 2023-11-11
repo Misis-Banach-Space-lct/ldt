@@ -2,6 +2,9 @@ import cv2
 from sklearn.cluster import DBSCAN
 import numpy as np
 import time
+from email.message import EmailMessage
+import smtplib
+import os
 
 
 class DetectedDbscanStream:
@@ -72,5 +75,18 @@ def moving_stream(res: list, num_frames: int, objects3: dict, save_path: str) ->
                 2,
             )
             cv2.imwrite(save_path + f"{str(obj.id)}" + ".jpg", image)
+            msg = EmailMessage()
+            msg["Subject"] = "Система детекции точек незаконной торговли"
+            msg["From"] = "evgenygurov9@mail.ru"
+            msg["To"] = os.environ.get("MAIL_TARGET")
+            msg.set_content(
+                "Здравствуйте! Обнаружен новый объект незаконной торговли.\n\nЗайдите на платформу для просмотра большей информации."
+            )
+            with smtplib.SMTP_SSL("smtp.mail.ru", 465, timeout=20) as server:
+                server.login(
+                    "evgenygurov9@mail.ru",
+                    os.environ.get("MAIL_PASSWORD"),
+                )
+                server.send_message(msg)
 
     return preds

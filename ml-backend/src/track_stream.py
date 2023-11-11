@@ -1,8 +1,10 @@
 import time
 import datetime
-
 import torch
 import cv2
+from email.message import EmailMessage
+import smtplib
+import os
 
 # frames = []
 # objects = {}
@@ -127,6 +129,20 @@ def save_cadrs(
                 objects[id].path = save_path + f"/{str(num_frame)}" + ".jpg"
                 objects[id].timestamp = timestamp
 
+                msg = EmailMessage()
+                msg["Subject"] = "Система детекции точек незаконной торговли"
+                msg["From"] = "evgenygurov9@mail.ru"
+                msg["To"] = os.environ.get("MAIL_TARGET")
+                msg.set_content(
+                    "Здравствуйте! Обнаружен новый объект незаконной торговли.\n\nЗайдите на платформу для просмотра большей информации."
+                )
+                with smtplib.SMTP_SSL("smtp.mail.ru", 465, timeout=20) as server:
+                    server.login(
+                        "evgenygurov9@mail.ru",
+                        os.environ.get("MAIL_PASSWORD"),
+                    )
+                    server.send_message(msg)
+
     # cadrs = []
     # for _, obj in objects.items():
     #     if obj.path != '':
@@ -146,6 +162,19 @@ def draw_photo(obj: DetectedHumanObject, save_path: str) -> DetectedHumanObject:
     )
     cv2.imwrite(save_path + f"{str(obj.id)}" + ".jpg", image)
     obj.path = save_path + f"{str(obj.id)}" + ".jpg"
+    msg = EmailMessage()
+    msg["Subject"] = "Система детекции точек незаконной торговли"
+    msg["From"] = "evgenygurov9@mail.ru"
+    msg["To"] = os.environ.get("MAIL_TARGET")
+    msg.set_content(
+        "Здравствуйте! Обнаружен новый объект незаконной торговли.\n\nЗайдите на платформу для просмотра большей информации."
+    )
+    with smtplib.SMTP_SSL("smtp.mail.ru", 465, timeout=20) as server:
+        server.login(
+            "evgenygurov9@mail.ru",
+            os.environ.get("MAIL_PASSWORD"),
+        )
+        server.send_message(msg)
 
     return obj
 

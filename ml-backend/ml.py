@@ -27,13 +27,6 @@ class MlResult(BaseModel):
     detectedClassId: int
 
 
-class MlResultStream(BaseModel):
-    fileName: list
-    videoId: int
-    timeCode: float
-    detectedClassId: int
-
-
 def process(video_id: int, video_path: str, rtsp: bool = False):
     model = YOLO("weights/model.pt")
     model_predictor = RTDETR("weights/model_predictor.pt")
@@ -75,15 +68,6 @@ def process(video_id: int, video_path: str, rtsp: bool = False):
                     num_frame=num_frame,
                     objects=objects,
                 ).values()
-                savedModels = [
-                    MlResultStream(
-                        fileName=[path.replace("../", "") for path in obj.path],
-                        videoId=video_id,
-                        detectedClassId=obj.cls,
-                        timeCode=obj.timestamp,
-                    )
-                    for obj in saved
-                ]
                 """
                 if len(saved) > 0:
                     for key in saved:
@@ -99,15 +83,6 @@ def process(video_id: int, video_path: str, rtsp: bool = False):
                     people=people,
                     save_path=f"../static/processed/s_frames_h/{video_id}",
                 ).values()
-                humanModels = [
-                    MlResultStream(
-                        fileName=[path.replace("../", "") for path in obj.path],
-                        videoId=video_id,
-                        timeCode=obj.timestamp,
-                        detectedClassId=obj.cls,
-                    )
-                    for obj in human_saved
-                ]
 
                 actives = {}
                 active_saved = moving_stream(
@@ -116,15 +91,6 @@ def process(video_id: int, video_path: str, rtsp: bool = False):
                     objects3=actives,
                     save_path=f"../static/processed/s_frames_a/{video_id}",
                 ).values()
-                activeModels = [
-                    MlResultStream(
-                        fileName=[path.replace("../", "") for path in obj.path],
-                        videoId=video_id,
-                        timeCode=obj.timestamp,
-                        detectedClassId=obj.cls,
-                    )
-                    for obj in active_saved
-                ]
 
     else:
         cap = cv2.VideoCapture(f"../{video_path}")
@@ -132,7 +98,23 @@ def process(video_id: int, video_path: str, rtsp: bool = False):
         frame_cnt = cap.get(cv2.CAP_PROP_FRAME_COUNT)
         duration = frame_cnt / fps
 
-        vid_stride = 5  # чет придумать как связать с duration
+        # vid_stride = (
+        #     int(frame_cnt / 300)
+        #     if duration < 600
+        #     else int(frame_cnt / ((duration // 600) + 1) * 300)
+        # )
+        # vid_stride = 5
+
+        times = {120: 5, 300: 20, 600: 40}
+
+        vid_stride = 5
+        for i in times.keys():
+            if duration <= i:
+                vid_stride = times[i]
+                break
+            if i == 600:
+                vid_stride = 40
+                break
 
         frames = []
         with torch.no_grad():
@@ -143,6 +125,7 @@ def process(video_id: int, video_path: str, rtsp: bool = False):
                 tracker="bytetrack.yaml",
                 classes=[1, 2, 3],
                 vid_stride=vid_stride,
+                project="../static/processed/videos",
             )
             for res in results:
                 frames.append(res)

@@ -3,6 +3,9 @@ import cv2
 from celery import Celery
 from pydantic import BaseModel
 from ml import process, MlResult
+from dotenv import load_dotenv
+
+load_dotenv(".env")
 
 app = Celery(
     "tasks",
