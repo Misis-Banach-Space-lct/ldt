@@ -74,7 +74,7 @@ func (mr *mlFramePgRepository) FindMany(c context.Context, videoId int) ([]model
 
 	for rows.Next() {
 		var frame model.MlFrame
-		if err := rows.Scan(&frame.Id, &frame.VideoId, &frame.FileName, &frame.TimeCode, &frame.TimeCodeMl, &frame.DetectedClassId); err != nil {
+		if err := rows.Scan(&frame.Id, &frame.VideoId, &frame.FileName, &frame.TimeCode, &frame.TimeCodeMl, &frame.DetectedClassId, &frame.CreatedAt, &frame.UpdatedAt); err != nil {
 			return nil, err
 		}
 
