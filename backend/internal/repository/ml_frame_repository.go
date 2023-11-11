@@ -43,7 +43,10 @@ func (mr *mlFramePgRepository) InsertMany(c context.Context, framesData []model.
 	defer tx.Rollback(c)
 
 	for _, frame := range framesData {
-		paths := []string{frame.FileName[0], frame.FileName[len(frame.FileName)-1], frame.FileName[len(frame.FileName)/2]}
+		paths := []string{frame.FileName[0]}
+		if len(frame.FileName) != 1 {
+			paths = []string{frame.FileName[0], frame.FileName[len(frame.FileName)-1], frame.FileName[len(frame.FileName)/2]}
+		}
 		pathsJoined := strings.Join(paths, ";")
 
 		_, err := tx.Exec(c, `
