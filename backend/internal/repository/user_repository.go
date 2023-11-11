@@ -41,7 +41,6 @@ func NewUserPgRepository(db *pgxpool.Pool) (model.UserRepository, error) {
 		return nil, err
 	}
 
-	// TODO: make separate db loader
 	var userId int
 	err = tx.QueryRow(ctx, `
 		select id from `+model.UsersTableName+` where id = 0

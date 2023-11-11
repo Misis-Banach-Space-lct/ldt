@@ -152,15 +152,12 @@ func (cc *cameraController) GetAll(c *fiber.Ctx) error {
 //	@Tags			cameras
 //	@Accept			json
 //	@Produce		json
-//	@Param			uuid						path		string				true	"Uuid подключения к камере"
+//	@Param			uuid					path		string			true	"Uuid подключения к камере"
 //	@Success		200						{object}	model.Camera	"Подключение к камере"
 //	@Failure		422						{object}	string			"Неверный формат данных"
 //	@Router			/api/v1/cameras/{uuid}	[get]
 func (cc *cameraController) GetOne(c *fiber.Ctx) error {
-	cameraUuid, err := c.ParamsInt("uuid")
-	if err != nil {
-		return response.ErrValidationError("cameraUuid", err)
-	}
+	cameraUuid := c.Params("uuid")
 
 	user, err := cc.userRepo.FindOne(c.Context(), "username", c.Locals("x-username"))
 	if err != nil {
@@ -253,8 +250,8 @@ func (cc *cameraController) UpdateGroup(c *fiber.Ctx) error {
 //	@Tags			cameras
 //	@Accept			json
 //	@Produce		json
-//	@Param			uuid	path		string			true	"Uuid подключения к камере"
-//	@Success		200	{object}	[]string	"Кадры с камеры"
+//	@Param			uuid							path		string		true	"Uuid подключения к камере"
+//	@Success		200								{object}	[]string	"Кадры с камеры"
 //	@Router			/api/v1/cameras/{uuid}/frames	[get]
 func (cc *cameraController) GetFrames(c *fiber.Ctx) error {
 	cameraUuid := c.Params("uuid")
@@ -312,16 +309,13 @@ func (cc *cameraController) GetFrames(c *fiber.Ctx) error {
 //	@Tags			cameras
 //	@Accept			json
 //	@Produce		json
-//	@Param			id						path		int		true	"Id подключения к камере"
+//	@Param			uuid					path		string	true	"Id подключения к камере"
 //	@Success		200						{string}	string	"Подключение к камере успешно удалено"
 //	@Failure		403						{object}	string	"Доступ запрещен"
 //	@Failure		422						{object}	string	"Неверный формат данных"
 //	@Router			/api/v1/cameras/{uuid}	[delete]
 func (cc *cameraController) DeleteOne(c *fiber.Ctx) error {
-	cameraUuid, err := c.ParamsInt("uuid")
-	if err != nil {
-		return response.ErrValidationError("cameraUuid", err)
-	}
+	cameraUuid := c.Params("uuid")
 
 	groups, err := cc.groupRepo.FindMany(c.Context(), 0, -1)
 	if err != nil {

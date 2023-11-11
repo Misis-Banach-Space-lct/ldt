@@ -48,14 +48,14 @@ definitions:
         - add
         - remove
         type: string
-      cameraId:
-        type: integer
+      cameraUuid:
+        type: string
       groupId:
         minimum: 0
         type: integer
     required:
     - action
-    - cameraId
+    - cameraUuid
     - groupId
     type: object
   model.GroupCreate:
@@ -275,7 +275,7 @@ paths:
       summary: Создание подключения к камере
       tags:
       - cameras
-  /api/v1/cameras/{id}:
+  /api/v1/cameras/{uuid}:
     delete:
       consumes:
       - application/json
@@ -283,9 +283,9 @@ paths:
       parameters:
       - description: Id подключения к камере
         in: path
-        name: id
+        name: uuid
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -309,11 +309,11 @@ paths:
       - application/json
       description: Получение подключения к камере
       parameters:
-      - description: Id подключения к камере
+      - description: Uuid подключения к камере
         in: path
-        name: id
+        name: uuid
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -326,6 +326,29 @@ paths:
           schema:
             type: string
       summary: Получение подключения к камере
+      tags:
+      - cameras
+  /api/v1/cameras/{uuid}/frames:
+    get:
+      consumes:
+      - application/json
+      description: Получение кадров с камеры
+      parameters:
+      - description: Uuid подключения к камере
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Кадры с камеры
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Получение кадров с камеры
       tags:
       - cameras
   /api/v1/cameras/many:

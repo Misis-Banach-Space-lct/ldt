@@ -200,7 +200,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/cameras/{id}": {
+        "/api/v1/cameras/{uuid}": {
             "get": {
                 "description": "Получение подключения к камере",
                 "consumes": [
@@ -215,9 +215,9 @@ const docTemplate = `{
                 "summary": "Получение подключения к камере",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Id подключения к камере",
-                        "name": "id",
+                        "type": "string",
+                        "description": "Uuid подключения к камере",
+                        "name": "uuid",
                         "in": "path",
                         "required": true
                     }
@@ -251,9 +251,9 @@ const docTemplate = `{
                 "summary": "Удаление подключения к камере",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Id подключения к камере",
-                        "name": "id",
+                        "name": "uuid",
                         "in": "path",
                         "required": true
                     }
@@ -275,6 +275,41 @@ const docTemplate = `{
                         "description": "Неверный формат данных",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/cameras/{uuid}/frames": {
+            "get": {
+                "description": "Получение кадров с камеры",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "summary": "Получение кадров с камеры",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Uuid подключения к камере",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Кадры с камеры",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1404,7 +1439,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "action",
-                "cameraId",
+                "cameraUuid",
                 "groupId"
             ],
             "properties": {
@@ -1415,8 +1450,8 @@ const docTemplate = `{
                         "remove"
                     ]
                 },
-                "cameraId": {
-                    "type": "integer"
+                "cameraUuid": {
+                    "type": "string"
                 },
                 "groupId": {
                     "type": "integer",
